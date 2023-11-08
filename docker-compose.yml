@@ -21,4 +21,5 @@ services:
     volumes:
       - ./ticket-service:/home/bun/app
     labels:
-      - "traefik.http.routers.ticket-service.rule=Host(`ticket-service.docker.localhost`)"
+      - "traefik.http.routers.ticket-service.rule=Host(`api.ticket-service.localhost`)"
+    hostname: ticket-service
