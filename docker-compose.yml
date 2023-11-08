@@ -1,5 +1,6 @@
-version: "3.8"
+version: "3.9"
 
+# Services
 services:
   reverse-proxy:
     # The official v2 Traefik docker image
@@ -15,8 +16,9 @@ services:
       # So that Traefik can listen to the Docker events
       - /var/run/docker.sock:/var/run/docker.sock
 
-  whoami:
-    # A container that exposes an API to show its IP address
-    image: traefik/whoami
+  ticket-service:
+    build: ./ticket-service
+    volumes:
+      - ./ticket-service:/home/bun/app
     labels:
-      - "traefik.http.routers.whoami.rule=Host(`whoami.docker.localhost`)"
+      - "traefik.http.routers.ticket-service.rule=Host(`ticket-service.docker.localhost`)"
