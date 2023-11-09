@@ -6,7 +6,7 @@ services:
     # The official v2 Traefik docker image
     image: traefik:v2.10
     # Enables the web UI and tells Traefik to listen to docker
-    command: --api.insecure=true --providers.docker
+    command: --configFile=/etc/traefik/traefik.yml
     ports:
       # The HTTP port
       - "80:80"
@@ -15,6 +15,7 @@ services:
     volumes:
       # So that Traefik can listen to the Docker events
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./traefik.yml:/etc/traefik/traefik.yml
 
   ticket-service:
     build: ./ticket-service
@@ -22,4 +23,4 @@ services:
       - ./ticket-service:/home/bun/app
     labels:
       - "traefik.http.routers.ticket-service.rule=Host(`api.ticket-service.localhost`)"
-    hostname: ticket-service
+    hostname: api.ticket-service.docker-compose
