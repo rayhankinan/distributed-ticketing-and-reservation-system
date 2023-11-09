@@ -23,4 +23,20 @@ services:
       - ./ticket-service:/home/bun/app
     labels:
       - "traefik.http.routers.ticket-service.rule=Host(`api.ticket-service.localhost`)"
+      - "traefik.http.routers.ticket-service.entrypoints=web"
     hostname: api.ticket-service.docker-compose
+
+  ticket-database:
+    image: postgres:16.0
+    volumes:
+      - ticket-database:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=ticket-user
+      - POSTGRES_PASSWORD=ticket-password
+      - POSTGRES_DB=ticket
+    hostname: ticket-database.docker-compose
+
+# Volumes
+volumes:
+  ticket-database:
+    driver: local
