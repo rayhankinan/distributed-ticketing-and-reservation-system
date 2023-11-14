@@ -1,5 +1,5 @@
 import { Elysia } from "elysia";
-import { PrismaClient } from "./generated/client";
+import { PrismaClient } from "@prisma/client";
 
 const app = new Elysia()
   .decorate("db", new PrismaClient())
