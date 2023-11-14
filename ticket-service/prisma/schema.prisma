@@ -9,3 +9,39 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+enum SlotStatus {
+  OPEN
+  ON_GOING
+  BOOKED
+}
+
+model Event {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String   @unique
+  lineup      String[] @default([])
+  description String?
+  homepage    String?
+
+  startTime DateTime
+  endTime   DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  Slot Slot[]
+}
+
+model Slot {
+  id      String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  eventId String     @db.Uuid
+  name    String
+  status  SlotStatus @default(OPEN)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  event Event @relation(fields: [eventId], references: [id])
+
+  @@unique([eventId, name])
+}

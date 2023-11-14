@@ -25,11 +25,15 @@ services:
       - "traefik.http.routers.ticket-service.rule=Host(`api.ticket-service.localhost`)"
       - "traefik.http.routers.ticket-service.entrypoints=web"
     hostname: api.ticket-service.docker-compose
+    depends_on:
+      - ticket-database
 
   ticket-database:
     image: postgres:16.0
     volumes:
       - ticket-database:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
     environment:
       - POSTGRES_USER=ticket-user
       - POSTGRES_PASSWORD=ticket-password
