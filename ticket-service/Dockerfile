@@ -9,9 +9,11 @@ RUN bun install --production
 
 COPY src src
 COPY tsconfig.json .
+COPY prisma prisma
+
 # COPY public public
 
 ENV NODE_ENV production
-CMD ["bun", "src/index.ts"]
+CMD ["bun", "start"]
 
 EXPOSE 3000

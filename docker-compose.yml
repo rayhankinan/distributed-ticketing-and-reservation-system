@@ -19,12 +19,16 @@ services:
 
   ticket-service:
     build: ./ticket-service
+
     volumes:
-      - ./ticket-service:/home/bun/app
+      - ./ticket-service:/app
+      - /app/node_modules
     labels:
       - "traefik.http.routers.ticket-service.rule=Host(`api.ticket-service.localhost`)"
       - "traefik.http.routers.ticket-service.entrypoints=web"
     hostname: api.ticket-service.docker-compose
+    environment:
+      - DATABASE_URL=postgresql://ticket-user:ticket-password@ticket-database.docker-compose:5432/ticket
     depends_on:
       - ticket-database
 
@@ -32,8 +36,6 @@ services:
     image: postgres:16.0
     volumes:
       - ticket-database:/var/lib/postgresql/data
-    ports:
-      - "5433:5432"
     environment:
       - POSTGRES_USER=ticket-user
       - POSTGRES_PASSWORD=ticket-password

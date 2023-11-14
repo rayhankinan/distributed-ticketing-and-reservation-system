@@ -2,19 +2,24 @@
   "name": "ticket-service",
   "version": "1.0.50",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "bun run --watch src/index.ts",
+    "start": "bun src/index.ts",
     "generate": "prisma generate",
     "migrate-dev": "prisma migrate dev",
     "migrate-deploy": "prisma migrate deploy"
   },
   "dependencies": {
+    "@elysiajs/eden": "^0.7.4",
     "@prisma/client": "5.5.2",
     "elysia": "latest"
   },
   "devDependencies": {
     "bun-types": "latest",
     "prisma": "^5.5.2"
+  },
+  "prisma": {
+    "seed": "bun prisma/seed.ts",
+    "schema": "prisma/schema.prisma"
   },
   "module": "src/index.js"
 }
