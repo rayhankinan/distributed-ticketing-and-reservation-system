@@ -4,7 +4,6 @@
   "scripts": {
     "dev": "bun run --watch src/index.ts",
     "postinstall": "bun generate",
-    "start": "bun src/index.ts",
     "generate": "bunx prisma generate",
     "migrate-dev": "bunx prisma migrate dev",
     "migrate-deploy": "bunx prisma migrate deploy"
