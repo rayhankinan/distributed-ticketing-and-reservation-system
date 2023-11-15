@@ -1,21 +1,11 @@
 import { Elysia, t } from "elysia";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, SlotStatus } from "@prisma/client";
 
 const app = new Elysia()
   .decorate("db", new PrismaClient())
-  .group("/events", (app) =>
+  .group("/event", (app) =>
     app
       .get("/", async ({ db }) => await db.event.findMany())
-      .get(
-        "/:id",
-        async ({ db, params }) =>
-          await db.event.findUnique({
-            where: params,
-          }),
-        {
-          params: t.Object({ id: t.String() }),
-        }
-      )
       .post(
         "/",
         async ({ db, body }) =>
@@ -58,6 +48,65 @@ const app = new Elysia()
         "/:id",
         async ({ db, params }) =>
           await db.event.delete({
+            where: params,
+          }),
+        {
+          params: t.Object({
+            id: t.String(),
+          }),
+        }
+      )
+  )
+  .group("/slot", (app) =>
+    app
+      .get(
+        "/",
+        async ({ db, query }) =>
+          await db.slot.findMany({
+            where: query,
+          }),
+        {
+          query: t.Object({
+            eventId: t.Optional(t.String()),
+          }),
+        }
+      )
+      .post(
+        "/",
+        async ({ db, body }) =>
+          await db.slot.create({
+            data: body,
+          }),
+        {
+          body: t.Object({
+            eventId: t.String(),
+            name: t.String(),
+            status: t.Optional(t.Enum(SlotStatus)),
+          }),
+        }
+      )
+      .put(
+        "/:id",
+        async ({ db, params, body }) =>
+          await db.slot.update({
+            where: params,
+            data: body,
+          }),
+        {
+          params: t.Object({
+            id: t.String(),
+          }),
+          body: t.Object({
+            eventId: t.String(),
+            name: t.String(),
+            status: t.Optional(t.Enum(SlotStatus)),
+          }),
+        }
+      )
+      .delete(
+        "/:id",
+        async ({ db, params }) =>
+          await db.slot.delete({
             where: params,
           }),
         {

@@ -36,6 +36,8 @@ services:
     image: postgres:16.0
     volumes:
       - ticket-database:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
     environment:
       - POSTGRES_USER=ticket-user
       - POSTGRES_PASSWORD=ticket-password
