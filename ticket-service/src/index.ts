@@ -4,7 +4,7 @@ import { bearer } from "@elysiajs/bearer";
 import { serverTiming } from "@elysiajs/server-timing";
 import { cors } from "@elysiajs/cors";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { PrismaClient, SlotStatus } from "@prisma/client";
+import { PrismaClient, SeatStatus } from "@prisma/client";
 import { createClient } from "@supabase/supabase-js";
 
 enum Role {
@@ -158,7 +158,7 @@ const app = new Elysia()
             )
       )
   )
-  .group("/slot", (app) =>
+  .group("/seat", (app) =>
     app
       .guard(
         {
@@ -177,7 +177,7 @@ const app = new Elysia()
           app.get(
             "/",
             async ({ set, db, query }) => {
-              const data = await db.slot.findMany({
+              const data = await db.seat.findMany({
                 where: query,
               });
 
@@ -215,7 +215,7 @@ const app = new Elysia()
             .post(
               "/",
               async ({ set, db, body }) => {
-                const data = await db.slot.create({
+                const data = await db.seat.create({
                   data: body,
                 });
 
@@ -230,14 +230,14 @@ const app = new Elysia()
                 body: t.Object({
                   eventId: t.String(),
                   name: t.String(),
-                  status: t.Optional(t.Enum(SlotStatus)),
+                  status: t.Optional(t.Enum(SeatStatus)),
                 }),
               }
             )
             .put(
               "/:id",
               async ({ set, db, params, body }) => {
-                const data = await db.slot.update({
+                const data = await db.seat.update({
                   where: params,
                   data: body,
                 });
@@ -256,14 +256,14 @@ const app = new Elysia()
                 body: t.Object({
                   eventId: t.String(),
                   name: t.String(),
-                  status: t.Optional(t.Enum(SlotStatus)),
+                  status: t.Optional(t.Enum(SeatStatus)),
                 }),
               }
             )
             .delete(
               "/:id",
               async ({ set, db, params }) => {
-                const data = await db.slot.delete({
+                const data = await db.seat.delete({
                   where: params,
                 });
 
