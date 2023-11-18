@@ -9,8 +9,13 @@
     "migrate-deploy": "bunx prisma migrate deploy"
   },
   "dependencies": {
+    "@elysiajs/bearer": "^0.7.0",
+    "@elysiajs/cors": "^0.7.2",
+    "@elysiajs/jwt": "^0.7.0",
+    "@elysiajs/server-timing": "^0.7.1",
     "@prisma/client": "^5.6.0",
-    "elysia": "latest"
+    "elysia": "latest",
+    "http-status-codes": "^2.3.0"
   },
   "devDependencies": {
     "bun-types": "latest",
