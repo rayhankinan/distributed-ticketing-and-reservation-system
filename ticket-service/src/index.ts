@@ -5,6 +5,7 @@ import { serverTiming } from "@elysiajs/server-timing";
 import { cors } from "@elysiajs/cors";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { PrismaClient, SlotStatus } from "@prisma/client";
+import { createClient } from "@supabase/supabase-js";
 
 enum Role {
   ADMIN = "ADMIN",
@@ -32,12 +33,13 @@ const app = new Elysia()
     };
   })
   .decorate("db", new PrismaClient())
-  .get("/temp-user", async ({ jwt }) => {
-    return await jwt.sign({
-      userId: "836f7976-9615-4ef7-bb41-eea1a70a641e",
-      role: Role.ADMIN,
-    });
-  })
+  .decorate(
+    "supabase",
+    createClient(
+      process.env.SUPABASE_URL || "http://localhost:8000",
+      process.env.SUPABASE_KEY || "supabase-key"
+    )
+  )
   .group("/event", (app) =>
     app
       .guard(
@@ -47,7 +49,8 @@ const app = new Elysia()
               set.status = StatusCodes.FORBIDDEN;
 
               return {
-                message: ReasonPhrases.FORBIDDEN,
+                data: null,
+                error: ReasonPhrases.FORBIDDEN,
               };
             }
           },
@@ -59,8 +62,8 @@ const app = new Elysia()
             set.status = StatusCodes.OK;
 
             return {
-              message: ReasonPhrases.OK,
               data,
+              error: null,
             };
           })
       )
@@ -71,7 +74,8 @@ const app = new Elysia()
               set.status = StatusCodes.FORBIDDEN;
 
               return {
-                message: ReasonPhrases.FORBIDDEN,
+                data: null,
+                error: ReasonPhrases.FORBIDDEN,
               };
             }
           },
@@ -88,8 +92,8 @@ const app = new Elysia()
                 set.status = StatusCodes.CREATED;
 
                 return {
-                  message: ReasonPhrases.CREATED,
                   data,
+                  error: null,
                 };
               },
               {
@@ -114,8 +118,8 @@ const app = new Elysia()
                 set.status = StatusCodes.OK;
 
                 return {
-                  message: ReasonPhrases.OK,
                   data,
+                  error: null,
                 };
               },
               {
@@ -142,8 +146,8 @@ const app = new Elysia()
                 set.status = StatusCodes.OK;
 
                 return {
-                  message: ReasonPhrases.OK,
                   data,
+                  error: null,
                 };
               },
               {
@@ -163,7 +167,8 @@ const app = new Elysia()
               set.status = StatusCodes.FORBIDDEN;
 
               return {
-                message: ReasonPhrases.FORBIDDEN,
+                data: null,
+                error: ReasonPhrases.FORBIDDEN,
               };
             }
           },
@@ -179,8 +184,8 @@ const app = new Elysia()
               set.status = StatusCodes.OK;
 
               return {
-                message: ReasonPhrases.OK,
                 data,
+                error: null,
               };
             },
             {
@@ -199,7 +204,8 @@ const app = new Elysia()
               set.status = StatusCodes.FORBIDDEN;
 
               return {
-                message: ReasonPhrases.FORBIDDEN,
+                data: null,
+                error: ReasonPhrases.FORBIDDEN,
               };
             }
           },
@@ -216,8 +222,8 @@ const app = new Elysia()
                 set.status = StatusCodes.CREATED;
 
                 return {
-                  message: ReasonPhrases.CREATED,
                   data,
+                  error: null,
                 };
               },
               {
@@ -239,8 +245,8 @@ const app = new Elysia()
                 set.status = StatusCodes.OK;
 
                 return {
-                  message: ReasonPhrases.OK,
                   data,
+                  error: null,
                 };
               },
               {
@@ -264,8 +270,8 @@ const app = new Elysia()
                 set.status = StatusCodes.OK;
 
                 return {
-                  message: ReasonPhrases.OK,
                   data,
+                  error: null,
                 };
               },
               {

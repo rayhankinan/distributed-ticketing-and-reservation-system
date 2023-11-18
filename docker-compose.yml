@@ -29,6 +29,8 @@ services:
     hostname: api.ticket-service.docker-compose
     environment:
       - DATABASE_URL=postgresql://ticket-user:ticket-password@ticket-database.docker-compose:5432/ticket
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}
     depends_on:
       - ticket-database
 
