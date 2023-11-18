@@ -5,7 +5,6 @@ import { serverTiming } from "@elysiajs/server-timing";
 import { cors } from "@elysiajs/cors";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { PrismaClient, SeatStatus } from "@prisma/client";
-import { createClient } from "@supabase/supabase-js";
 
 enum Role {
   ADMIN = "ADMIN",
@@ -33,13 +32,6 @@ const app = new Elysia()
     };
   })
   .decorate("db", new PrismaClient())
-  .decorate(
-    "supabase",
-    createClient(
-      process.env.SUPABASE_URL || "http://localhost:8000",
-      process.env.SUPABASE_KEY || "supabase-key"
-    )
-  )
   .group("/event", (app) =>
     app
       .guard(
@@ -296,7 +288,8 @@ const app = new Elysia()
                 });
 
                 // TODO: Generate PDF and upload to Supabase Storage
-                // TODO: Call Client Service webhook to create ticket
+
+                // TODO: Call Client Service webhook to create ticket using publicStorage
 
                 set.status = StatusCodes.OK;
 
