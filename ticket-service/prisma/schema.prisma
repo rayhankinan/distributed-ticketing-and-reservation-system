@@ -11,7 +11,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum SlotStatus {
+enum SeatStatus {
   OPEN
   ON_GOING
   BOOKED
@@ -30,14 +30,14 @@ model Event {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
-  Slot Slot[]
+  Seat Seat[]
 }
 
-model Slot {
+model Seat {
   id      String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   eventId String     @db.Uuid
   name    String
-  status  SlotStatus @default(OPEN)
+  status  SeatStatus @default(OPEN)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
