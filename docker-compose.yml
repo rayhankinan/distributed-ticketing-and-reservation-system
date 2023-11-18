@@ -44,7 +44,31 @@ services:
       - POSTGRES_DB=ticket
     hostname: ticket-database.docker-compose
 
+  client-service:
+    build: ./client-service
+    volumes:
+      - ./client-service:/app
+    labels:
+      - "traefik.http.routers.client-service.rule=Host(`client-service.localhost`)"
+      - "traefik.http.routers.client-service.entrypoints=web"
+    environment:
+      - DATABASE_URL=postgresql://client-user:client-password@client-database:5432/client
+
+  client-database:
+    image: postgres:16.0
+    volumes:
+      - client-database:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+    environment:
+      - POSTGRES_USER=client-user
+      - POSTGRES_PASSWORD=client-password
+      - POSTGRES_DB=client
+    hostname: client-database.docker-compose
+
 # Volumes
 volumes:
   ticket-database:
+    driver: local
+  client-database:
     driver: local
