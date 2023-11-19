@@ -5,7 +5,6 @@ import { serverTiming } from "@elysiajs/server-timing";
 import { cors } from "@elysiajs/cors";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { PrismaClient, SeatStatus } from "@prisma/client";
-import { createClient } from "@supabase/supabase-js";
 
 enum Role {
   ADMIN = "ADMIN",
@@ -33,13 +32,6 @@ const app = new Elysia()
     };
   })
   .decorate("db", new PrismaClient())
-  .decorate(
-    "supabase",
-    createClient(
-      process.env.SUPABASE_URL || "http://localhost:8000",
-      process.env.SUPABASE_KEY || "supabase-key"
-    )
-  )
   .group("/event", (app) =>
     app
       .guard(
@@ -194,6 +186,124 @@ const app = new Elysia()
               }),
             }
           )
+      )
+      .guard(
+        {
+          beforeHandle: ({ set, payload }) => {
+            if (!payload || payload.role !== Role.USER) {
+              set.status = StatusCodes.FORBIDDEN;
+
+              return {
+                data: null,
+                error: ReasonPhrases.FORBIDDEN,
+              };
+            }
+          },
+        },
+        (app) =>
+          app
+            .post(
+              "/reserve",
+              async ({ set, db, body }) => {
+                const seat = await db.seat.findUnique({
+                  where: body,
+                  select: {
+                    status: true,
+                  },
+                });
+
+                if (!seat) {
+                  set.status = StatusCodes.NOT_FOUND;
+
+                  return {
+                    data: null,
+                    error: ReasonPhrases.NOT_FOUND,
+                  };
+                }
+
+                if (seat.status !== SeatStatus.OPEN) {
+                  set.status = StatusCodes.CONFLICT;
+
+                  return {
+                    data: null,
+                    error: ReasonPhrases.CONFLICT,
+                  };
+                }
+
+                const data = await db.seat.update({
+                  where: body,
+                  data: {
+                    status: SeatStatus.ON_GOING,
+                  },
+                });
+
+                // TODO: Queue to Payment Service
+
+                set.status = StatusCodes.OK;
+
+                return {
+                  data,
+                  error: null,
+                };
+              },
+              {
+                body: t.Object({
+                  id: t.String(),
+                }),
+              }
+            )
+            .post(
+              "/webhook",
+              async ({ set, db, body }) => {
+                const seat = await db.seat.findUnique({
+                  where: body,
+                  select: {
+                    status: true,
+                  },
+                });
+
+                if (!seat) {
+                  set.status = StatusCodes.NOT_FOUND;
+
+                  return {
+                    data: null,
+                    error: ReasonPhrases.NOT_FOUND,
+                  };
+                }
+
+                if (seat.status !== SeatStatus.ON_GOING) {
+                  set.status = StatusCodes.CONFLICT;
+
+                  return {
+                    data: null,
+                    error: ReasonPhrases.CONFLICT,
+                  };
+                }
+
+                const data = await db.seat.update({
+                  where: body,
+                  data: {
+                    status: SeatStatus.BOOKED,
+                  },
+                });
+
+                // TODO: Generate PDF and upload to Supabase Storage
+
+                // TODO: Call Client Service webhook to create ticket using publicStorage
+
+                set.status = StatusCodes.OK;
+
+                return {
+                  data,
+                  error: null,
+                };
+              },
+              {
+                body: t.Object({
+                  id: t.String(),
+                }),
+              }
+            )
       )
       .guard(
         {
