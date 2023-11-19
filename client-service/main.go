@@ -1,14 +1,11 @@
 package main
 
 import (
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	"client-service/internal/app"
 )
 
 func main() {
-	e := echo.New()
-	e.Use(middleware.CORS())
-	e.Use(middleware.Recover())
-
-	e.Start(":3001")
+	dep := app.NewDep()
+	app := app.NewStartCmd(dep)
+	app.Start()
 }

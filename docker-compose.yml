@@ -54,7 +54,7 @@ services:
       - "traefik.http.routers.client-service.rule=Host(`client-service.localhost`)"
       - "traefik.http.routers.client-service.entrypoints=web"
     environment:
-      - DATABASE_URL=postgresql://client-user:client-password@client-database:5432/client
+      - DATABASE_URL=postgresql://client-user:client-password@client-database.docker-compose:5432/client
 
   client-database:
     image: postgres:16.0
