@@ -8,6 +8,8 @@ import (
 	"os/signal"
 	"time"
 
+	"client-service/internal/handler"
+	"client-service/internal/router"
 	"client-service/internal/server"
 
 	"github.com/sirupsen/logrus"
@@ -21,11 +23,13 @@ type StartCmd struct {
 
 func NewStartCmd(dep *Dep) *StartCmd {
 	s := server.New(dep.Logger)
-	_, err := NewDatabaseConn()
-	if err != nil {
-		dep.Logger.Fatalf("failed to connect to database: %v", err)
-	}
+	// _, err := NewDatabaseConn()
+	// if err != nil {
+	// 	dep.Logger.Fatalf("failed to connect to database: %v", err)
+	// }
 
+	h := handler.New()
+	router.Register(s, h)
 	quitChan := make(chan os.Signal, 1)
 
 	return &StartCmd{
