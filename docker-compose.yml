@@ -50,6 +50,8 @@ services:
     build: ./client-service
     volumes:
       - ./client-service:/app
+    ports:
+      - "3001:3001"
     labels:
       - "traefik.http.routers.client-service.rule=Host(`client-service.localhost`)"
       - "traefik.http.routers.client-service.entrypoints=web"

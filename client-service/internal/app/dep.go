@@ -5,8 +5,9 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/sirupsen/logrus"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 type Dep struct {
@@ -33,14 +34,11 @@ func NewDep() *Dep {
 	}
 }
 
-func NewDatabaseConn() (*sqlx.DB, error) {
-	user := "client-user"
-	password := "client-password"
-	host := "client-database.docker-compose"
-	port := "5432"
-	dbname := "client"
-	sslmode := "disable"
-
-	connURL := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s", user, password, host, port, dbname, sslmode)
-	return sqlx.Connect("postgres", connURL)
+func NewDatabaseConn() (*gorm.DB, error) {
+	dsn := "host=client-database user=client-user password=client-password dbname=client port=5432 sslmode=disable"
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		return nil, err
+	}
+	return db, nil
 }

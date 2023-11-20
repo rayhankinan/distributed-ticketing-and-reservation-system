@@ -2,10 +2,11 @@ package main
 
 import (
 	"client-service/internal/app"
+	"client-service/internal/cmd"
 )
 
 func main() {
 	dep := app.NewDep()
-	app := app.NewStartCmd(dep)
-	app.Start()
+	cli := cmd.New(dep)
+	_ = cli.Execute()
 }

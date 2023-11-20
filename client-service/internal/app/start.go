@@ -23,10 +23,10 @@ type StartCmd struct {
 
 func NewStartCmd(dep *Dep) *StartCmd {
 	s := server.New(dep.Logger)
-	// _, err := NewDatabaseConn()
-	// if err != nil {
-	// 	dep.Logger.Fatalf("failed to connect to database: %v", err)
-	// }
+	_, err := NewDatabaseConn()
+	if err != nil {
+		dep.Logger.Fatalf("failed to connect to database: %v", err)
+	}
 
 	h := handler.New()
 	router.Register(s, h)
