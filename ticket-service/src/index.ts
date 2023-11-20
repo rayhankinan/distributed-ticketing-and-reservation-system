@@ -287,9 +287,7 @@ const app = new Elysia()
                   },
                 });
 
-                // TODO: Generate PDF and upload to Supabase Storage
-
-                // TODO: Call Client Service webhook to create ticket using publicStorage
+                // TODO: Generate PDF and send the link to Client Service
 
                 set.status = StatusCodes.OK;
 
