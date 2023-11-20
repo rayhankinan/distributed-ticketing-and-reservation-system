@@ -3,22 +3,24 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "postinstall": "npx @puppeteer/browsers install chrome@stable --path /app/node_modules/puppeteer/.local-chromium",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
+    "next": "14.0.3",
+    "puppeteer": "^21.5.2",
     "react": "^18",
-    "react-dom": "^18",
-    "next": "14.0.3"
+    "react-dom": "^18"
   },
   "devDependencies": {
-    "typescript": "^5",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "eslint": "^8",
-    "eslint-config-next": "14.0.3"
+    "eslint-config-next": "14.0.3",
+    "typescript": "^5"
   }
 }

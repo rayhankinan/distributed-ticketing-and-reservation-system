@@ -46,7 +46,7 @@ services:
   ticket-pdf:
     build: ./ticket-pdf
     labels:
-      - "traefik.http.routers.ticket-pdf.rule=Host(`api.ticket-pdf.localhost`)"
+      - "traefik.http.routers.ticket-pdf.rule=Host(`cdn.ticket-pdf.localhost`)"
       - "traefik.http.routers.ticket-pdf.entrypoints=web"
     hostname: api.ticket-pdf.docker-compose
 
