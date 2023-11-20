@@ -10,5 +10,6 @@ type Client struct {
 	ID       uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
 	Username string
 	Password string
+	Role     string
 	Tickets  []ticket.Ticket `gorm:"foreignKey:UID"`
 }
