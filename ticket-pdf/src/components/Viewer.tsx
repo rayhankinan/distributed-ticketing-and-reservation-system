@@ -7,6 +7,8 @@ import {
   Font,
   Image,
 } from "@react-pdf/renderer";
+import { z } from "zod";
+import pdfSchema from "@/schemas";
 
 // Register font
 Font.register({
@@ -68,7 +70,7 @@ const styles = StyleSheet.create({
 });
 
 // Create Document Component
-const Viewer = ({ username }: { username: string }) => (
+const Viewer = ({ username }: z.infer<typeof pdfSchema>) => (
   <PDFViewer style={styles.viewer}>
     <Document>
       <Page style={styles.body}>
