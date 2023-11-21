@@ -83,7 +83,7 @@ services:
     environment:
       - REDIS_HOST=redis.docker-compose
       - REDIS_PORT=6379
-      - REDIS_CHANNEL=test_channel
+      - REDIS_CHANNEL=payment
     depends_on:
       - payment-database
       - redis
