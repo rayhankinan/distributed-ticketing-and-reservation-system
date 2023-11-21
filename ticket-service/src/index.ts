@@ -42,7 +42,7 @@ const app = new Elysia()
 
               return {
                 data: null,
-                error: ReasonPhrases.FORBIDDEN,
+                message: ReasonPhrases.FORBIDDEN,
               };
             }
           },
@@ -55,7 +55,7 @@ const app = new Elysia()
 
             return {
               data,
-              error: null,
+              message: ReasonPhrases.OK,
             };
           })
       )
@@ -67,7 +67,7 @@ const app = new Elysia()
 
               return {
                 data: null,
-                error: ReasonPhrases.FORBIDDEN,
+                message: ReasonPhrases.FORBIDDEN,
               };
             }
           },
@@ -85,7 +85,7 @@ const app = new Elysia()
 
                 return {
                   data,
-                  error: null,
+                  message: ReasonPhrases.CREATED,
                 };
               },
               {
@@ -111,7 +111,7 @@ const app = new Elysia()
 
                 return {
                   data,
-                  error: null,
+                  message: ReasonPhrases.OK,
                 };
               },
               {
@@ -139,7 +139,7 @@ const app = new Elysia()
 
                 return {
                   data,
-                  error: null,
+                  message: ReasonPhrases.OK,
                 };
               },
               {
@@ -160,7 +160,7 @@ const app = new Elysia()
 
               return {
                 data: null,
-                error: ReasonPhrases.FORBIDDEN,
+                message: ReasonPhrases.FORBIDDEN,
               };
             }
           },
@@ -177,7 +177,7 @@ const app = new Elysia()
 
               return {
                 data,
-                error: null,
+                message: ReasonPhrases.OK,
               };
             },
             {
@@ -195,7 +195,7 @@ const app = new Elysia()
 
               return {
                 data: null,
-                error: ReasonPhrases.FORBIDDEN,
+                message: ReasonPhrases.FORBIDDEN,
               };
             }
           },
@@ -217,7 +217,7 @@ const app = new Elysia()
 
                   return {
                     data: null,
-                    error: ReasonPhrases.NOT_FOUND,
+                    message: ReasonPhrases.NOT_FOUND,
                   };
                 }
 
@@ -226,7 +226,7 @@ const app = new Elysia()
 
                   return {
                     data: null,
-                    error: ReasonPhrases.CONFLICT,
+                    message: ReasonPhrases.CONFLICT,
                   };
                 }
 
@@ -243,7 +243,7 @@ const app = new Elysia()
 
                 return {
                   data,
-                  error: null,
+                  message: ReasonPhrases.OK,
                 };
               },
               {
@@ -267,7 +267,7 @@ const app = new Elysia()
 
                   return {
                     data: null,
-                    error: ReasonPhrases.NOT_FOUND,
+                    message: ReasonPhrases.NOT_FOUND,
                   };
                 }
 
@@ -276,7 +276,7 @@ const app = new Elysia()
 
                   return {
                     data: null,
-                    error: ReasonPhrases.CONFLICT,
+                    message: ReasonPhrases.CONFLICT,
                   };
                 }
 
@@ -293,7 +293,7 @@ const app = new Elysia()
 
                 return {
                   data,
-                  error: null,
+                  message: ReasonPhrases.OK,
                 };
               },
               {
@@ -313,7 +313,7 @@ const app = new Elysia()
 
               return {
                 data: null,
-                error: ReasonPhrases.FORBIDDEN,
+                message: ReasonPhrases.FORBIDDEN,
               };
             }
           },
@@ -331,7 +331,7 @@ const app = new Elysia()
 
                 return {
                   data,
-                  error: null,
+                  message: ReasonPhrases.CREATED,
                 };
               },
               {
@@ -354,7 +354,7 @@ const app = new Elysia()
 
                 return {
                   data,
-                  error: null,
+                  message: ReasonPhrases.OK,
                 };
               },
               {
@@ -379,7 +379,7 @@ const app = new Elysia()
 
                 return {
                   data,
-                  error: null,
+                  message: ReasonPhrases.OK,
                 };
               },
               {
