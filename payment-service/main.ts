@@ -1,5 +1,6 @@
-import { client } from "./redis/index.ts";
+import { redisClient } from "./redis/index.ts";
 import { expressApp } from "./express/index.ts";
+import { processInvoice } from "./helpers/process-invoice.ts";
 
 const main = () => {
   try {
@@ -11,12 +12,12 @@ const main = () => {
 };
 
 const connectAndSubscribeToPubsub = async () => {
-  const subscriber = client.duplicate();
+  const subscriber = redisClient.duplicate();
   await subscriber.connect();
   await subscriber.subscribe(
     Deno.env.get("REDIS_CHANNEL") || "payment",
-    (message) => {
-      console.log(message); // 'message'
+    async (invoiceId) => {
+      await processInvoice(invoiceId);
     }
   );
 };

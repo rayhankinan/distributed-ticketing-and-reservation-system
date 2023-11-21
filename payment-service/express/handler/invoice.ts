@@ -1,5 +1,6 @@
 import { Request, Response } from "npm:@types/express";
 import { mongoClient } from "../../mongo/index.ts";
+import { publishMessage } from "../../redis/publish.ts";
 
 type CreateInvoiceRequest = {
   seatId: string;
@@ -27,6 +28,7 @@ export const createInvoiceHandler = async (req: Request, res: Response) => {
       status: "PENDING",
     };
     await collection.insertOne(newInvoiceDocument);
+    await publishMessage(newInvoiceDocument.id);
 
     res.status(200).json({
       data: newInvoiceDocument,
