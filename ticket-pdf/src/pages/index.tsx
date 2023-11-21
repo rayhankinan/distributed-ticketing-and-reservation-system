@@ -23,7 +23,6 @@ export const getServerSideProps = (async (context) => {
     .update(data)
     .digest("base64url");
 
-  // Check if hash is valid
   if (newHash !== hash) return { props: { data: null } };
 
   // Decode data
@@ -32,7 +31,6 @@ export const getServerSideProps = (async (context) => {
   // Validate data
   const parsed = pdfSchema.safeParse(object);
 
-  // Check if data is valid
   if (!parsed.success)
     return {
       props: { data: null },
