@@ -28,7 +28,7 @@ export const getServerSideProps = (async (context) => {
   // Decode data
   const object = JSON.parse(Buffer.from(data, "base64url").toString("ascii"));
 
-  // Validate data
+  // Check if data is valid
   const parsed = pdfSchema.safeParse(object);
 
   if (!parsed.success)
