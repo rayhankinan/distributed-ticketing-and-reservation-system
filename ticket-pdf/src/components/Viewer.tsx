@@ -70,12 +70,12 @@ const styles = StyleSheet.create({
 });
 
 // Create Document Component
-const Viewer = ({ username }: z.infer<typeof pdfSchema>) => (
+const Viewer = ({ userId }: z.infer<typeof pdfSchema>) => (
   <PDFViewer style={styles.viewer}>
     <Document>
       <Page style={styles.body}>
         <Text style={styles.header} fixed>
-          Created for: {username}
+          Created for: {userId}
         </Text>
         <Text style={styles.title}>Don Quijote de la Mancha</Text>
         <Text style={styles.author}>Miguel de Cervantes</Text>

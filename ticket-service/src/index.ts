@@ -5,6 +5,7 @@ import { serverTiming } from "@elysiajs/server-timing";
 import { cors } from "@elysiajs/cors";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { PrismaClient, SeatStatus } from "@prisma/client";
+import { createHmac } from "crypto";
 
 enum Role {
   ADMIN = "ADMIN",
@@ -42,6 +43,7 @@ const app = new Elysia()
 
               return {
                 data: null,
+                metadata: null,
                 message: ReasonPhrases.FORBIDDEN,
               };
             }
@@ -49,13 +51,25 @@ const app = new Elysia()
         },
         (app) =>
           app.get("/", async ({ set, db }) => {
-            const data = await db.event.findMany();
+            const { data, metadata, status, message } = await db.$transaction(
+              async (tx) => {
+                const data = await tx.event.findMany();
 
-            set.status = StatusCodes.OK;
+                return {
+                  data,
+                  metadata: null,
+                  status: StatusCodes.OK,
+                  message: ReasonPhrases.OK,
+                };
+              }
+            );
+
+            set.status = status;
 
             return {
               data,
-              message: ReasonPhrases.OK,
+              metadata,
+              message,
             };
           })
       )
@@ -67,6 +81,7 @@ const app = new Elysia()
 
               return {
                 data: null,
+                metadata: null,
                 message: ReasonPhrases.FORBIDDEN,
               };
             }
@@ -77,15 +92,26 @@ const app = new Elysia()
             .post(
               "/",
               async ({ set, db, body }) => {
-                const data = await db.event.create({
-                  data: body,
-                });
+                const { data, metadata, status, message } =
+                  await db.$transaction(async (tx) => {
+                    const data = await tx.event.create({
+                      data: body,
+                    });
 
-                set.status = StatusCodes.CREATED;
+                    return {
+                      data,
+                      metadata: null,
+                      status: StatusCodes.CREATED,
+                      message: ReasonPhrases.CREATED,
+                    };
+                  });
+
+                set.status = status;
 
                 return {
                   data,
-                  message: ReasonPhrases.CREATED,
+                  metadata,
+                  message,
                 };
               },
               {
@@ -102,16 +128,27 @@ const app = new Elysia()
             .put(
               "/:id",
               async ({ set, db, params, body }) => {
-                const data = await db.event.update({
-                  where: params,
-                  data: body,
-                });
+                const { data, metadata, status, message } =
+                  await db.$transaction(async (tx) => {
+                    const data = await tx.event.update({
+                      where: params,
+                      data: body,
+                    });
 
-                set.status = StatusCodes.OK;
+                    return {
+                      data,
+                      metadata: null,
+                      status: StatusCodes.OK,
+                      message: ReasonPhrases.OK,
+                    };
+                  });
+
+                set.status = status;
 
                 return {
                   data,
-                  message: ReasonPhrases.OK,
+                  metadata,
+                  message,
                 };
               },
               {
@@ -131,15 +168,26 @@ const app = new Elysia()
             .delete(
               "/:id",
               async ({ set, db, params }) => {
-                const data = await db.event.delete({
-                  where: params,
-                });
+                const { data, metadata, status, message } =
+                  await db.$transaction(async (tx) => {
+                    const data = await tx.event.delete({
+                      where: params,
+                    });
 
-                set.status = StatusCodes.OK;
+                    return {
+                      data,
+                      metadata: null,
+                      status: StatusCodes.OK,
+                      message: ReasonPhrases.OK,
+                    };
+                  });
+
+                set.status = status;
 
                 return {
                   data,
-                  message: ReasonPhrases.OK,
+                  metadata,
+                  message,
                 };
               },
               {
@@ -160,6 +208,7 @@ const app = new Elysia()
 
               return {
                 data: null,
+                metadata: null,
                 message: ReasonPhrases.FORBIDDEN,
               };
             }
@@ -169,15 +218,27 @@ const app = new Elysia()
           app.get(
             "/",
             async ({ set, db, query }) => {
-              const data = await db.seat.findMany({
-                where: query,
-              });
+              const { data, metadata, status, message } = await db.$transaction(
+                async (tx) => {
+                  const data = await tx.seat.findMany({
+                    where: query,
+                  });
 
-              set.status = StatusCodes.OK;
+                  return {
+                    data,
+                    metadata: null,
+                    status: StatusCodes.OK,
+                    message: ReasonPhrases.OK,
+                  };
+                }
+              );
+
+              set.status = status;
 
               return {
                 data,
-                message: ReasonPhrases.OK,
+                metadata,
+                message,
               };
             },
             {
@@ -195,6 +256,7 @@ const app = new Elysia()
 
               return {
                 data: null,
+                metadata: null,
                 message: ReasonPhrases.FORBIDDEN,
               };
             }
@@ -204,46 +266,63 @@ const app = new Elysia()
           app
             .post(
               "/reserve",
-              async ({ set, db, body }) => {
-                const seat = await db.seat.findUnique({
-                  where: body,
-                  select: {
-                    status: true,
-                  },
-                });
+              async ({ set, db, body, payload }) => {
+                const { data, metadata, status, message } =
+                  await db.$transaction(async (tx) => {
+                    if (!payload)
+                      return {
+                        data: null,
+                        metadata: null,
+                        status: StatusCodes.FORBIDDEN,
+                        message: ReasonPhrases.FORBIDDEN,
+                      };
 
-                if (!seat) {
-                  set.status = StatusCodes.NOT_FOUND;
+                    const seat = await tx.seat.findUnique({
+                      where: body,
+                      select: {
+                        status: true,
+                      },
+                    });
 
-                  return {
-                    data: null,
-                    message: ReasonPhrases.NOT_FOUND,
-                  };
-                }
+                    if (!seat)
+                      return {
+                        data: null,
+                        metadata: null,
+                        status: StatusCodes.NOT_FOUND,
+                        message: ReasonPhrases.NOT_FOUND,
+                      };
 
-                if (seat.status !== SeatStatus.OPEN) {
-                  set.status = StatusCodes.CONFLICT;
+                    if (seat.status !== SeatStatus.OPEN)
+                      return {
+                        data: null,
+                        metadata: null,
+                        status: StatusCodes.CONFLICT,
+                        message: ReasonPhrases.CONFLICT,
+                      };
 
-                  return {
-                    data: null,
-                    message: ReasonPhrases.CONFLICT,
-                  };
-                }
+                    const data = await tx.seat.update({
+                      where: body,
+                      data: {
+                        status: SeatStatus.ON_GOING,
+                      },
+                    });
 
-                const data = await db.seat.update({
-                  where: body,
-                  data: {
-                    status: SeatStatus.ON_GOING,
-                  },
-                });
+                    // TODO: Queue to Payment Service
 
-                // TODO: Queue to Payment Service
+                    return {
+                      data,
+                      metadata: null,
+                      status: StatusCodes.OK,
+                      message: ReasonPhrases.OK,
+                    };
+                  });
 
-                set.status = StatusCodes.OK;
+                set.status = status;
 
                 return {
                   data,
-                  message: ReasonPhrases.OK,
+                  metadata,
+                  message,
                 };
               },
               {
@@ -254,46 +333,81 @@ const app = new Elysia()
             )
             .post(
               "/webhook",
-              async ({ set, db, body }) => {
-                const seat = await db.seat.findUnique({
-                  where: body,
-                  select: {
-                    status: true,
-                  },
-                });
+              async ({ set, db, body, payload }) => {
+                const { data, metadata, status, message } =
+                  await db.$transaction(async (tx) => {
+                    if (!payload)
+                      return {
+                        data: null,
+                        metadata: null,
+                        status: StatusCodes.FORBIDDEN,
+                        message: ReasonPhrases.FORBIDDEN,
+                      };
 
-                if (!seat) {
-                  set.status = StatusCodes.NOT_FOUND;
+                    const seat = await tx.seat.findUnique({
+                      where: body,
+                      select: {
+                        status: true,
+                      },
+                    });
 
-                  return {
-                    data: null,
-                    message: ReasonPhrases.NOT_FOUND,
-                  };
-                }
+                    if (!seat)
+                      return {
+                        data: null,
+                        metadata: null,
+                        status: StatusCodes.NOT_FOUND,
+                        message: ReasonPhrases.NOT_FOUND,
+                      };
 
-                if (seat.status !== SeatStatus.ON_GOING) {
-                  set.status = StatusCodes.CONFLICT;
+                    if (seat.status !== SeatStatus.ON_GOING)
+                      return {
+                        data: null,
+                        metadata: null,
+                        status: StatusCodes.CONFLICT,
+                        message: ReasonPhrases.CONFLICT,
+                      };
 
-                  return {
-                    data: null,
-                    message: ReasonPhrases.CONFLICT,
-                  };
-                }
+                    const data = await tx.seat.update({
+                      where: body,
+                      data: {
+                        status: SeatStatus.BOOKED,
+                      },
+                    });
 
-                const data = await db.seat.update({
-                  where: body,
-                  data: {
-                    status: SeatStatus.BOOKED,
-                  },
-                });
+                    // TODO: Generate PDF and send the link to Client Service
+                    const pdfData = Buffer.from(
+                      JSON.stringify({
+                        userId: payload.userId,
+                      })
+                    ).toString("base64url");
 
-                // TODO: Generate PDF and send the link to Client Service
+                    const pdfHash = createHmac("sha256", "dhika-jelek")
+                      .update(pdfData)
+                      .digest("base64url");
 
-                set.status = StatusCodes.OK;
+                    const rawURL = new URL("http://cdn.ticket-pdf.localhost");
+
+                    rawURL.searchParams.append("data", pdfData);
+                    rawURL.searchParams.append("hash", pdfHash);
+
+                    const url = rawURL.toString();
+
+                    return {
+                      data,
+                      metadata: {
+                        url,
+                      },
+                      status: StatusCodes.OK,
+                      message: ReasonPhrases.OK,
+                    };
+                  });
+
+                set.status = status;
 
                 return {
                   data,
-                  message: ReasonPhrases.OK,
+                  metadata,
+                  message,
                 };
               },
               {
@@ -306,13 +420,12 @@ const app = new Elysia()
       .guard(
         {
           beforeHandle: ({ set, payload }) => {
-            const isValid = payload && payload.role === Role.ADMIN;
-
-            if (!isValid) {
+            if (!payload || payload.role !== Role.ADMIN) {
               set.status = StatusCodes.FORBIDDEN;
 
               return {
                 data: null,
+                metadata: null,
                 message: ReasonPhrases.FORBIDDEN,
               };
             }
@@ -323,15 +436,26 @@ const app = new Elysia()
             .post(
               "/",
               async ({ set, db, body }) => {
-                const data = await db.seat.create({
-                  data: body,
-                });
+                const { data, metadata, status, message } =
+                  await db.$transaction(async (tx) => {
+                    const data = await tx.seat.create({
+                      data: body,
+                    });
 
-                set.status = StatusCodes.CREATED;
+                    return {
+                      data,
+                      metadata: null,
+                      status: StatusCodes.CREATED,
+                      message: ReasonPhrases.CREATED,
+                    };
+                  });
+
+                set.status = status;
 
                 return {
                   data,
-                  message: ReasonPhrases.CREATED,
+                  metadata,
+                  message,
                 };
               },
               {
@@ -345,16 +469,27 @@ const app = new Elysia()
             .put(
               "/:id",
               async ({ set, db, params, body }) => {
-                const data = await db.seat.update({
-                  where: params,
-                  data: body,
-                });
+                const { data, metadata, status, message } =
+                  await db.$transaction(async (tx) => {
+                    const data = await tx.seat.update({
+                      where: params,
+                      data: body,
+                    });
 
-                set.status = StatusCodes.OK;
+                    return {
+                      data,
+                      metadata: null,
+                      status: StatusCodes.OK,
+                      message: ReasonPhrases.OK,
+                    };
+                  });
+
+                set.status = status;
 
                 return {
                   data,
-                  message: ReasonPhrases.OK,
+                  metadata,
+                  message,
                 };
               },
               {
@@ -371,15 +506,26 @@ const app = new Elysia()
             .delete(
               "/:id",
               async ({ set, db, params }) => {
-                const data = await db.seat.delete({
-                  where: params,
-                });
+                const { data, metadata, status, message } =
+                  await db.$transaction(async (tx) => {
+                    const data = await tx.seat.delete({
+                      where: params,
+                    });
 
-                set.status = StatusCodes.OK;
+                    return {
+                      data,
+                      metadata: null,
+                      status: StatusCodes.OK,
+                      message: ReasonPhrases.OK,
+                    };
+                  });
+
+                set.status = status;
 
                 return {
                   data,
-                  message: ReasonPhrases.OK,
+                  metadata,
+                  message,
                 };
               },
               {

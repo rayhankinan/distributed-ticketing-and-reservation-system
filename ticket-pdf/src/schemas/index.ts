@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const pdfSchema = z.object({
-  username: z.string(),
+  userId: z.string().uuid(),
 });
 
 export default pdfSchema;
