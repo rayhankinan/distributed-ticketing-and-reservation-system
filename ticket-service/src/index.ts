@@ -5,6 +5,7 @@ import { serverTiming } from "@elysiajs/server-timing";
 import { cors } from "@elysiajs/cors";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { PrismaClient, SeatStatus } from "@prisma/client";
+import axios from "axios";
 import { createHmac } from "crypto";
 
 enum Role {
@@ -20,6 +21,7 @@ const app = new Elysia()
         userId: t.String(),
         role: t.Enum(Role),
       }),
+      alg: "HS256",
     })
   )
   .use(bearer())
@@ -30,6 +32,18 @@ const app = new Elysia()
 
     return {
       payload,
+    };
+  })
+  .derive(({ bearer }) => {
+    const axiosPaymentInstance = axios.create({
+      baseURL: "http://api.payment-service.docker-compose:3002",
+      headers: {
+        Authorization: `Bearer ${bearer}`,
+      },
+    });
+
+    return {
+      axiosPaymentInstance,
     };
   })
   .decorate("db", new PrismaClient())
@@ -266,7 +280,7 @@ const app = new Elysia()
           app
             .post(
               "/reserve",
-              async ({ set, db, body, payload }) => {
+              async ({ set, db, body, axiosPaymentInstance }) => {
                 const { data, metadata, status, message } =
                   await db.$transaction(async (tx) => {
                     const isFailed = Math.random() < 0; // TODO: Replace with 0.2 if system is stable
@@ -277,14 +291,6 @@ const app = new Elysia()
                         metadata: null,
                         status: StatusCodes.INTERNAL_SERVER_ERROR,
                         message: ReasonPhrases.INTERNAL_SERVER_ERROR,
-                      };
-
-                    if (!payload)
-                      return {
-                        data: null,
-                        metadata: null,
-                        status: StatusCodes.FORBIDDEN,
-                        message: ReasonPhrases.FORBIDDEN,
                       };
 
                     const seat = await tx.seat.findUnique({
@@ -302,6 +308,7 @@ const app = new Elysia()
                         message: ReasonPhrases.NOT_FOUND,
                       };
 
+                    // TODO: If seat is already booked, add to queue
                     if (seat.status !== SeatStatus.OPEN)
                       return {
                         data: null,
@@ -317,13 +324,16 @@ const app = new Elysia()
                       },
                     });
 
-                    // TODO: Queue to Payment Service
+                    // TODO: Call payment service for payment
+                    await axiosPaymentInstance.post("/invoice", {
+                      seatId: body.id,
+                    });
 
                     return {
                       data,
                       metadata: null,
-                      status: StatusCodes.OK,
-                      message: ReasonPhrases.OK,
+                      status: StatusCodes.CREATED,
+                      message: ReasonPhrases.CREATED,
                     };
                   });
 
@@ -341,8 +351,18 @@ const app = new Elysia()
                 }),
               }
             )
+            .post("/cancel", async () => {
+              // TODO: Dequeue if there is a queue
+              // TODO: Call payment service for refund
+
+              return {
+                data: null,
+                metadata: null,
+                message: ReasonPhrases.CREATED,
+              };
+            })
             .post(
-              "/webhook",
+              "/webhook-success",
               async ({ set, db, body, payload }) => {
                 const { data, metadata, status, message } =
                   await db.$transaction(async (tx) => {
@@ -384,7 +404,6 @@ const app = new Elysia()
                       },
                     });
 
-                    // TODO: Generate PDF and send the link to Client Service
                     const pdfData = Buffer.from(
                       JSON.stringify({
                         userId: payload.userId,
@@ -407,8 +426,8 @@ const app = new Elysia()
                       metadata: {
                         url,
                       },
-                      status: StatusCodes.OK,
-                      message: ReasonPhrases.OK,
+                      status: StatusCodes.CREATED,
+                      message: ReasonPhrases.CREATED,
                     };
                   });
 
@@ -426,6 +445,15 @@ const app = new Elysia()
                 }),
               }
             )
+            .post("/webhook-failed", async () => {
+              // TODO: Dequeue if there is a queue
+
+              return {
+                data: null,
+                metadata: null,
+                message: ReasonPhrases.CREATED,
+              };
+            })
       )
       .guard(
         {

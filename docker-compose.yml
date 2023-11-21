@@ -58,8 +58,6 @@ services:
     labels:
       - "traefik.http.routers.client-service.rule=Host(`api.client-service.localhost`)"
       - "traefik.http.routers.client-service.entrypoints=web"
-    environment:
-      - DATABASE_URL=postgresql://client-user:client-password@client-database.docker-compose:5432/client
     hostname: api.client-service.docker-compose
     depends_on:
       - client-database
@@ -79,19 +77,11 @@ services:
 
   payment-service:
     build: ./payment-service
-    ports:
-      - "3002:3002"
     labels:
       - "traefik.http.routers.payment-service.rule=Host(`api.payment-service.localhost`)"
       - "traefik.http.routers.payment-service.entrypoints=web"
     volumes:
       - ./payment-service:/app
-    environment:
-      - REDIS_HOST=redis.docker-compose
-      - REDIS_PORT=6379
-      - REDIS_CHANNEL=payment
-      - MONGO_HOST=payment-database.docker-compose
-      - MONGO_PORT=27017
     hostname: api.payment-service.docker-compose
     depends_on:
       - payment-database
@@ -100,12 +90,16 @@ services:
   payment-database:
     image: mongo
     restart: always
+    volumes:
+      - payment-database:/data/db
     ports:
       - "27018:27017"
     hostname: payment-database.docker-compose
 
   redis:
     image: redis:6.2-alpine
+    volumes:
+      - redis:/data
     restart: always
     ports:
       - "6380:6379"

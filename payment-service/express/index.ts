@@ -1,7 +1,17 @@
+// @deno-types="npm:@types/express"
 import express from "npm:express";
+// @deno-types="npm:@types/body-parser"
 import bodyParser from "npm:body-parser";
-import { createInvoiceHandler } from "./handler/invoice.ts";
+import { expressjwt } from "npm:express-jwt";
 
-export const expressApp = new express();
+import { createInvoiceHandler } from "./invoice-handler.ts";
 
-expressApp.post("/invoice", bodyParser.json(), createInvoiceHandler);
+export const expressApp = express().post(
+  "/invoice",
+  bodyParser.json(),
+  expressjwt({
+    secret: "dhika-jelek",
+    algorithms: ["HS256"],
+  }),
+  createInvoiceHandler
+);

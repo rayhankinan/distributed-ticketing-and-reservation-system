@@ -1,7 +1,7 @@
 import { MongoClient } from "npm:mongodb";
 
 export const mongoClient = new MongoClient(
-  `mongodb://${Deno.env.get("MONGO_HOST")}:${Deno.env.get("MONGO_PORT")}`
+  "mongodb://payment-database.docker-compose:27017"
 );
 
 (async () => {

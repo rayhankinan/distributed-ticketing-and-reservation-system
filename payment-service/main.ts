@@ -7,20 +7,13 @@ const connectAndSubscribeToPubsub = async () => {
 
   await subscriber.connect();
 
-  await subscriber.subscribe(
-    Deno.env.get("REDIS_CHANNEL") || "payment",
-    processInvoice
-  );
+  await subscriber.subscribe("payment", processInvoice);
 };
 
 (async () => {
-  try {
-    await connectAndSubscribeToPubsub();
+  await connectAndSubscribeToPubsub();
 
-    expressApp.listen(3002, () => {
-      console.log(">> Payment service is up and running!");
-    });
-  } catch (error) {
-    console.log(">> Payment server failed to start", error);
-  }
+  expressApp.listen(3002, () => {
+    console.log(">> Payment service is up and running!");
+  });
 })();
