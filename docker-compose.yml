@@ -84,12 +84,15 @@ services:
       - REDIS_HOST=redis.docker-compose
       - REDIS_PORT=6379
       - REDIS_CHANNEL=payment
+      - MONGO_HOST=payment-database.docker-compose
+      - MONGO_PORT=27017
     depends_on:
       - payment-database
       - redis
 
   payment-database:
-    image: mongo:6-jammy
+    image: mongo
+    restart: always
     ports:
       - "27017:27017"
     hostname: payment-database.docker-compose
