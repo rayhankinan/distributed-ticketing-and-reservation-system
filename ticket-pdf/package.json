@@ -3,15 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "postinstall": "npx @puppeteer/browsers install chrome@stable --path /app/node_modules/puppeteer/.local-chromium",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
+    "@react-pdf/renderer": "^3.1.14",
     "next": "14.0.3",
-    "puppeteer": "^21.5.2",
     "react": "^18",
     "react-dom": "^18"
   },
