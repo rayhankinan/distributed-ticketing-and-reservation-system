@@ -269,6 +269,16 @@ const app = new Elysia()
               async ({ set, db, body, payload }) => {
                 const { data, metadata, status, message } =
                   await db.$transaction(async (tx) => {
+                    const isFailed = Math.random() < 0; // TODO: Replace with 0.2 if system is stable
+
+                    if (isFailed)
+                      return {
+                        data: null,
+                        metadata: null,
+                        status: StatusCodes.INTERNAL_SERVER_ERROR,
+                        message: ReasonPhrases.INTERNAL_SERVER_ERROR,
+                      };
+
                     if (!payload)
                       return {
                         data: null,

@@ -6,7 +6,7 @@ export const processInvoice = async (invoiceId: string) => {
     const db = mongoClient.db("payment");
     const collection = db.collection("invoices");
 
-    const isFailed = Math.random() < 0.1;
+    const isFailed = Math.random() < 0; // TODO: Replace with 0.1 if system is stable
     const targetStatus = isFailed ? "FAILED" : "SUCCESS";
 
     await collection.updateOne(
@@ -14,12 +14,12 @@ export const processInvoice = async (invoiceId: string) => {
       { $set: { status: targetStatus } }
     );
 
-    // TODO: Call webhook API
-
     if (!isFailed) {
       console.log(`>> Successfully processed invoice ID ${invoiceId}`);
+      // TODO: Call webhook API (success)
     } else {
       console.log(`>> Failed processing invoice ID ${invoiceId}`);
+      // TODO: Call webhook API (failed)
     }
   } catch {
     const throwBackIntoQueue = async () => {
