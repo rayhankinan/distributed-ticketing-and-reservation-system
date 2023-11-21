@@ -49,7 +49,7 @@ const processInvoiceSuccess = async (invoiceId: string) => {
   if (!isFailed) {
     console.log(`>> Successfully processed invoice ID ${invoiceId}`);
 
-    // TODO: Call webhook API (success)
+    // Call webhook API (success)
     await axiosInstance.post("/seat/webhook-success", {
       id: parsed.data.seatId,
     });

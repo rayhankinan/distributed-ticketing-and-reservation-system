@@ -324,7 +324,7 @@ const app = new Elysia()
                       },
                     });
 
-                    // TODO: Call payment service for payment
+                    // Call payment service for payment
                     await axiosPaymentInstance.post("/invoice", {
                       seatId: body.id,
                     });
