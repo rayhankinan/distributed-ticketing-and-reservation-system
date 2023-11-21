@@ -22,10 +22,7 @@ export const processInvoice = async (invoiceId: string) => {
       // TODO: Call webhook API (failed)
     }
   } catch {
-    const throwBackIntoQueue = async () => {
-      await publishMessage(invoiceId);
-    };
-
-    await throwBackIntoQueue();
+    // Throw back to queue
+    await publishMessage(invoiceId);
   }
 };
