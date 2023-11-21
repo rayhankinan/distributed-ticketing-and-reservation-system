@@ -1,21 +1,18 @@
-import redis from "npm:redis";
+import { client } from "./redis/index.ts";
 
-(async () => {
-  const client = redis.createClient({
-    socket: {
-      host: Deno.env.get("REDIS_HOST"),
-      port: Deno.env.get("REDIS_PORT"),
-    },
-  });
+const main = async () => {
+  await connectAndSubscribeToPubsub();
+};
 
+const connectAndSubscribeToPubsub = async () => {
   const subscriber = client.duplicate();
-
   await subscriber.connect();
-
   await subscriber.subscribe(
     Deno.env.get("REDIS_CHANNEL") || "payment",
     (message) => {
       console.log(message); // 'message'
     }
   );
-})();
+};
+
+main();
