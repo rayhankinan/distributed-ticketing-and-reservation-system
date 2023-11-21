@@ -1,18 +1,13 @@
-import express from "npm:express";
-import { Request, Response } from "npm:@types/express";
 import { client } from "./redis/index.ts";
-
-const app = new express();
-
-app.get("/", (_req: Request, res: Response) => {
-  res.send("Hello World!");
-});
+import { expressApp } from "./express/index.ts";
 
 const main = () => {
-  connectAndSubscribeToPubsub();
-  app.listen(3002, () => {
-    console.log(">> Payment service is up and running!");
-  });
+  try {
+    connectAndSubscribeToPubsub();
+    runExpressApp();
+  } catch (error) {
+    console.log(">> Payment server failed to start", error);
+  }
 };
 
 const connectAndSubscribeToPubsub = async () => {
@@ -24,6 +19,12 @@ const connectAndSubscribeToPubsub = async () => {
       console.log(message); // 'message'
     }
   );
+};
+
+const runExpressApp = () => {
+  expressApp.listen(3002, () => {
+    console.log(">> Payment service is up and running!");
+  });
 };
 
 main();
