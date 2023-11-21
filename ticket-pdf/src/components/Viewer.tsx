@@ -68,12 +68,12 @@ const styles = StyleSheet.create({
 });
 
 // Create Document Component
-const Viewer = () => (
+const Viewer = ({ username }: { username: string }) => (
   <PDFViewer style={styles.viewer}>
     <Document>
       <Page style={styles.body}>
         <Text style={styles.header} fixed>
-          ~ Created with react-pdf ~
+          Created for: {username}
         </Text>
         <Text style={styles.title}>Don Quijote de la Mancha</Text>
         <Text style={styles.author}>Miguel de Cervantes</Text>
