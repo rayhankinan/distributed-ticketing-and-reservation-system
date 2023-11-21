@@ -1,7 +1,18 @@
+import express from "npm:express";
+import { Request, Response } from "npm:@types/express";
 import { client } from "./redis/index.ts";
 
-const main = async () => {
-  await connectAndSubscribeToPubsub();
+const app = new express();
+
+app.get("/", (_req: Request, res: Response) => {
+  res.send("Hello World!");
+});
+
+const main = () => {
+  connectAndSubscribeToPubsub();
+  app.listen(3002, () => {
+    console.log(">> Payment service is up and running!");
+  });
 };
 
 const connectAndSubscribeToPubsub = async () => {
