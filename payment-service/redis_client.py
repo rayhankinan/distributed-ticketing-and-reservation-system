@@ -2,8 +2,9 @@ import redis
 
 class RedisClient:
   def __init__(self, host: str, port: int):
+    print(f">> Connecting to Redis server at {host}:{port}.")
     self.redis_client = redis.Redis(host=host, port=port)
-  
+    self.redis_client.set("Key", "Value", 100000)
 
   def start(self, channel: str):
     pubsub = self.redis_client.pubsub()

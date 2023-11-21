@@ -76,9 +76,38 @@ services:
       - POSTGRES_DB=client
     hostname: client-database.docker-compose
 
+  payment-service:
+    build: ./payment-service
+    volumes:
+      - ./payment-service:/app
+    environment:
+      - REDIS_HOST=redis.docker-compose
+      - REDIS_PORT=6379
+      - REDIS_CHANNEL=test_channel
+    depends_on:
+      - payment-database
+      - redis
+
+  payment-database:
+    image: mongo:6-jammy
+    ports:
+      - "27017:27017"
+    hostname: payment-database.docker-compose
+
+  redis:
+    image: redis:6.2-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    hostname: redis.docker-compose
+
 # Volumes
 volumes:
   ticket-database:
     driver: local
   client-database:
+    driver: local
+  payment-database:
+    driver: local
+  redis:
     driver: local
