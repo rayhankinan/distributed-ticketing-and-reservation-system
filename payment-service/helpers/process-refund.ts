@@ -26,7 +26,7 @@ const processRefund = async (invoiceId: string) => {
   const result = await updateInvoiceDocumentAndReturn(invoiceId, targetStatus);
   const parsedInvoice = parseUpdatedInvoice(result);
 
-  const bearer = await createSignedUserJwt(parsedInvoice.data.seatId);
+  const bearer = await createSignedUserJwt(parsedInvoice.data.userId);
 
   const axiosInstance = axios.create({
     baseURL: "http://api.ticket-service.docker-compose:3000",
