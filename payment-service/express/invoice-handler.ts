@@ -1,18 +1,32 @@
 // @deno-types="npm:@types/express"
 import { type Response } from "npm:express";
-import { z } from "npm:zod";
 import { type Request } from "npm:express-jwt";
 import { ReasonPhrases, StatusCodes } from "npm:http-status-codes";
 
 import { mongoClient } from "../mongo/index.ts";
 import { publishMessage } from "../redis/publish.ts";
 import { PaymentStatus } from "../enum/index.ts";
+import { createInvoiceRequestSchema } from "../schema/index.ts";
 
-const schema = z.object({
-  seatId: z.string().uuid(),
-});
+export const createInvoiceHandler = async (
+  req: Request<{
+    userId: string;
+  }>,
+  res: Response
+) => {
+  try {
+    await createInvoice(req, res);
+  } catch (error) {
+    console.log(`>> Failed creating invoice: ${error}`);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      data: null,
+      metadata: null,
+      message: ReasonPhrases.INTERNAL_SERVER_ERROR,
+    });
+  }
+};
 
-const invoiceHandler = async (
+const createInvoice = async (
   req: Request<{
     userId: string;
   }>,
@@ -27,9 +41,8 @@ const invoiceHandler = async (
     return;
   }
 
-  const parsed = schema.safeParse(req.body);
-
-  if (!parsed.success) {
+  const parsedRequest = createInvoiceRequestSchema.safeParse(req.body);
+  if (!parsedRequest.success) {
     res.status(StatusCodes.BAD_REQUEST).json({
       data: null,
       metadata: null,
@@ -38,14 +51,10 @@ const invoiceHandler = async (
     return;
   }
 
-  const db = mongoClient.db("payment");
-  const data = await db.collection("invoices").insertOne({
-    seatId: parsed.data.seatId,
-    userId: req.auth.userId,
-    status: PaymentStatus.PENDING,
-  }); // TODO: Agak susah untuk dibuat atomic dengan message queue
-
-  await publishMessage(data.insertedId.toString()); // TODO: Agak susah untuk dibuat atomic dengan database
+  const data = await insertToInvoiceAndSendMessage(
+    parsedRequest.data.seatId,
+    req.auth.userId
+  );
 
   res.status(StatusCodes.OK).json({
     data,
@@ -54,18 +63,30 @@ const invoiceHandler = async (
   });
 };
 
-export const createInvoiceHandler = async (
-  req: Request<{
-    userId: string;
-  }>,
-  res: Response
-) =>
-  await invoiceHandler(req, res).catch(() => {
-    console.log(">> Failed creating invoice");
-
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      data: null,
-      metadata: null,
-      message: ReasonPhrases.INTERNAL_SERVER_ERROR,
-    });
+const insertToInvoiceAndSendMessage = async (
+  seatId: string,
+  userId: string
+) => {
+  const db = mongoClient.db("payment");
+  const data = await db.collection("invoices").insertOne({
+    seatId: seatId,
+    userId: userId,
+    status: PaymentStatus.PENDING,
   });
+
+  try {
+    await publishMessage(data.insertedId.toString());
+  } catch (error) {
+    // Roll back insertion
+    await db.collection("invoices").findOneAndDelete({
+      _id: data.insertedId,
+    });
+    console.log(
+      ">> Failed to publish message after inserting invoice. Insertion rolled back."
+    );
+
+    throw error;
+  }
+
+  return data;
+};
