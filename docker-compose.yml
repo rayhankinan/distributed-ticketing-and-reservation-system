@@ -30,6 +30,7 @@ services:
       - DATABASE_URL=postgresql://ticket-user:ticket-password@ticket-database.docker-compose:5432/ticket
     depends_on:
       - ticket-database
+      - ticket-redis
 
   ticket-database:
     image: postgres:16.0
@@ -50,6 +51,15 @@ services:
       - "traefik.http.routers.ticket-pdf.rule=Host(`cdn.ticket-pdf.localhost`)"
       - "traefik.http.routers.ticket-pdf.entrypoints=web"
     hostname: cdn.ticket-pdf.docker-compose
+
+  ticket-redis:
+    image: redis:6.2-alpine
+    volumes:
+      - ticket-redis:/data
+    restart: always
+    ports:
+      - "6380:6379"
+    hostname: ticket-redis.docker-compose
 
   client-service:
     build: ./client-service
@@ -85,7 +95,7 @@ services:
     hostname: api.payment-service.docker-compose
     depends_on:
       - payment-database
-      - redis
+      - payment-redis
 
   payment-database:
     image: mongo
@@ -96,14 +106,14 @@ services:
       - "27018:27017"
     hostname: payment-database.docker-compose
 
-  redis:
+  payment-redis:
     image: redis:6.2-alpine
     volumes:
-      - redis:/data
+      - payment-redis:/data
     restart: always
     ports:
-      - "6380:6379"
-    hostname: redis.docker-compose
+      - "6381:6379"
+    hostname: payment-redis.docker-compose
 
 # Volumes
 volumes:
@@ -113,5 +123,7 @@ volumes:
     driver: local
   payment-database:
     driver: local
-  redis:
+  payment-redis:
+    driver: local
+  ticket-redis:
     driver: local

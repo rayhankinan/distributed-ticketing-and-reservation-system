@@ -1,16 +1,24 @@
 import { redisClient } from "./redis/index.ts";
 import { expressApp } from "./express/index.ts";
 import { tryToProcessInvoice } from "./helpers/process-invoice.ts";
+import { tryToProcessRefund } from "./helpers/process-refund.ts";
 
 const main = () => {
-  connectAndSubscribeToPubsub();
+  connectAndSubscribeToPayment();
+  connectAndSubscribeToRefund();
   startExpressServer();
 };
 
-const connectAndSubscribeToPubsub = async () => {
+const connectAndSubscribeToPayment = async () => {
   const subscriber = redisClient.duplicate();
   await subscriber.connect();
   await subscriber.subscribe("payment", tryToProcessInvoice);
+};
+
+const connectAndSubscribeToRefund = async () => {
+  const subscriber = redisClient.duplicate();
+  await subscriber.connect();
+  await subscriber.subscribe("refund", tryToProcessRefund);
 };
 
 const startExpressServer = () => {

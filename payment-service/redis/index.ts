@@ -1,8 +1,5 @@
-import redis from "npm:redis";
+import { createClient } from "npm:redis";
 
-export const redisClient = redis.createClient({
-  socket: {
-    host: "redis.docker-compose",
-    port: "6379",
-  },
+export const redisClient = createClient({
+  url: "redis://payment-redis.docker-compose:6379",
 });

@@ -8,16 +8,16 @@ import { publishMessage } from "../redis/publish.ts";
 import { requestSchema } from "../schema/index.ts";
 import { PaymentStatus } from "../enum/index.ts";
 
-export const createInvoiceHandler = async (
+export const createRefundHandler = async (
   req: Request<{
     userId: string;
   }>,
   res: Response
 ) => {
   try {
-    await createInvoice(req, res);
+    await createRefund(req, res);
   } catch (error) {
-    console.log(`>> Failed creating invoice: ${error}`);
+    console.log(`>> Failed creating refund: ${error}`);
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       data: null,
       metadata: null,
@@ -26,7 +26,7 @@ export const createInvoiceHandler = async (
   }
 };
 
-const createInvoice = async (
+const createRefund = async (
   req: Request<{
     userId: string;
   }>,
@@ -51,7 +51,7 @@ const createInvoice = async (
     return;
   }
 
-  const data = await insertToInvoiceAndSendMessage(
+  const data = await insertToRefundAndSendMessage(
     parsedRequest.data.seatId,
     req.auth.userId
   );
@@ -63,10 +63,7 @@ const createInvoice = async (
   });
 };
 
-const insertToInvoiceAndSendMessage = async (
-  seatId: string,
-  userId: string
-) => {
+const insertToRefundAndSendMessage = async (seatId: string, userId: string) => {
   const db = mongoClient.db("payment");
   const data = await db.collection("invoices").insertOne({
     seatId: seatId,
@@ -75,14 +72,14 @@ const insertToInvoiceAndSendMessage = async (
   });
 
   try {
-    await publishMessage("payment", data.insertedId.toString());
+    await publishMessage("refund", data.insertedId.toString());
   } catch (error) {
     // Roll back insertion
     await db.collection("invoices").findOneAndDelete({
       _id: data.insertedId,
     });
     console.log(
-      ">> Failed to publish message after inserting invoice. Insertion rolled back."
+      ">> Failed to publish message after inserting refund. Insertion rolled back."
     );
 
     throw error;

@@ -7,21 +7,21 @@ import { PaymentStatus, WebhookRoutes } from "../enum/index.ts";
 import { publishMessage } from "../redis/publish.ts";
 import { invoiceSchema } from "../schema/process-invoice.ts";
 
-export const tryToProcessInvoice = async (invoiceId: string) => {
+export const tryToProcessRefund = async (invoiceId: string) => {
   try {
-    await processInvoice(invoiceId);
+    await processRefund(invoiceId);
   } catch (error) {
-    console.log(`>> Failed processing invoice ID ${invoiceId}: ${error}`);
+    console.log(`>> Failed processing refund ID ${invoiceId}: ${error}`);
 
     // Put back to queue
-    await publishMessage("payment", invoiceId);
+    await publishMessage("refund", invoiceId);
   }
 };
 
-const processInvoice = async (invoiceId: string) => {
+const processRefund = async (invoiceId: string) => {
   const isFailed = Math.random() < 0; // NOTE: Replace with 0.1 if system is stable
 
-  const targetStatus = isFailed ? PaymentStatus.FAILED : PaymentStatus.SUCCESS;
+  const targetStatus = isFailed ? PaymentStatus.FAILED : PaymentStatus.REFUNDED;
 
   const result = await updateInvoiceDocumentAndReturn(invoiceId, targetStatus);
   const parsedInvoice = parseUpdatedInvoice(result);
@@ -36,12 +36,12 @@ const processInvoice = async (invoiceId: string) => {
   });
 
   if (!isFailed) {
-    console.log(`>> Successfully processed invoice ID ${invoiceId}`);
-    await axiosInstance.post(WebhookRoutes.WEBHOOK_SUCCESS, {
+    console.log(`>> Successfully processed refund ID ${invoiceId}`);
+    await axiosInstance.post(WebhookRoutes.WEBHOOK_REFUND, {
       id: parsedInvoice.data.seatId,
     });
   } else {
-    console.log(`>> Failed processing invoice ID ${invoiceId}`);
+    console.log(`>> Failed processing refund ID ${invoiceId}`);
     await axiosInstance.post(WebhookRoutes.WEBHOOK_FAILED, {
       id: parsedInvoice.data.seatId,
     });
@@ -50,7 +50,7 @@ const processInvoice = async (invoiceId: string) => {
 
 const updateInvoiceDocumentAndReturn = async (
   invoiceId: string,
-  targetStatus: PaymentStatus.FAILED | PaymentStatus.SUCCESS
+  targetStatus: PaymentStatus.FAILED | PaymentStatus.REFUNDED
 ) => {
   const db = mongoClient.db("payment");
   const result = await db
@@ -60,14 +60,14 @@ const updateInvoiceDocumentAndReturn = async (
       { $set: { status: targetStatus } }
     );
 
-  if (!result) throw new Error("Invoice not found");
+  if (!result) throw new Error("Refund not found");
 
   return result;
 };
 
 const parseUpdatedInvoice = (invoice: WithId<Document>) => {
   const parsedInvoice = invoiceSchema.safeParse(invoice);
-  if (!parsedInvoice.success) throw new Error("Invalid invoice");
+  if (!parsedInvoice.success) throw new Error("Invalid refund");
 
   return parsedInvoice;
 };

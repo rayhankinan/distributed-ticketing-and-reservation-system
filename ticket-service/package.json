@@ -15,7 +15,8 @@
     "@prisma/client": "^5.6.0",
     "axios": "^1.6.2",
     "elysia": "latest",
-    "http-status-codes": "^2.3.0"
+    "http-status-codes": "^2.3.0",
+    "redis": "^4.6.11"
   },
   "devDependencies": {
     "bun-types": "latest",

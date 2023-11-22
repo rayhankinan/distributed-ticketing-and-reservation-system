@@ -5,13 +5,11 @@ import { serverTiming } from "@elysiajs/server-timing";
 import { cors } from "@elysiajs/cors";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { PrismaClient, SeatStatus } from "@prisma/client";
+import { createClient } from "redis";
 import axios from "axios";
 import { createHmac } from "crypto";
 
-enum Role {
-  ADMIN = "ADMIN",
-  USER = "USER",
-}
+import { Role, TicketStatus } from "./enum";
 
 const app = new Elysia()
   .use(
@@ -44,6 +42,29 @@ const app = new Elysia()
 
     return {
       axiosPaymentInstance,
+    };
+  })
+  .derive(({ bearer }) => {
+    const axiosTicketInstance = axios.create({
+      baseURL: "http://api.ticket-service.docker-compose:3000",
+      headers: {
+        Authorization: `Bearer ${bearer}`,
+      },
+    });
+
+    return {
+      axiosTicketInstance,
+    };
+  })
+  .derive(async () => {
+    const redis = createClient({
+      url: "redis://ticket-redis.docker-compose:6379",
+    });
+
+    await redis.connect();
+
+    return {
+      redis,
     };
   })
   .decorate("db", new PrismaClient())
@@ -105,7 +126,7 @@ const app = new Elysia()
           app
             .post(
               "/",
-              async ({ set, db, body }) => {
+              async ({ set, body, db }) => {
                 const { data, metadata, status, message } =
                   await db.$transaction(async (tx) => {
                     const data = await tx.event.create({
@@ -141,7 +162,7 @@ const app = new Elysia()
             )
             .put(
               "/:id",
-              async ({ set, db, params, body }) => {
+              async ({ set, params, body, db }) => {
                 const { data, metadata, status, message } =
                   await db.$transaction(async (tx) => {
                     const data = await tx.event.update({
@@ -181,7 +202,7 @@ const app = new Elysia()
             )
             .delete(
               "/:id",
-              async ({ set, db, params }) => {
+              async ({ set, params, db }) => {
                 const { data, metadata, status, message } =
                   await db.$transaction(async (tx) => {
                     const data = await tx.event.delete({
@@ -231,7 +252,7 @@ const app = new Elysia()
         (app) =>
           app.get(
             "/",
-            async ({ set, db, query }) => {
+            async ({ set, query, db }) => {
               const { data, metadata, status, message } = await db.$transaction(
                 async (tx) => {
                   const data = await tx.seat.findMany({
@@ -280,19 +301,40 @@ const app = new Elysia()
           app
             .post(
               "/reserve",
-              async ({ set, db, body, axiosPaymentInstance }) => {
+              async ({
+                set,
+                body,
+                payload,
+                db,
+                redis,
+                axiosPaymentInstance,
+              }) => {
+                const isFailed = Math.random() < 0; // NOTE: Replace with 0.2 if system is stable
+
+                if (isFailed) {
+                  set.status = StatusCodes.INTERNAL_SERVER_ERROR;
+
+                  return {
+                    data: null,
+                    metadata: null,
+                    message: ReasonPhrases.INTERNAL_SERVER_ERROR,
+                  };
+                }
+
+                if (!payload) {
+                  set.status = StatusCodes.FORBIDDEN;
+
+                  return {
+                    data: null,
+                    metadata: null,
+                    message: ReasonPhrases.FORBIDDEN,
+                  };
+                }
+
+                // Update seat status to on going, and add user to queue if seat is already booked or on going
                 const { data, metadata, status, message } =
                   await db.$transaction(async (tx) => {
-                    const isFailed = Math.random() < 0; // TODO: Replace with 0.2 if system is stable
-
-                    if (isFailed)
-                      return {
-                        data: null,
-                        metadata: null,
-                        status: StatusCodes.INTERNAL_SERVER_ERROR,
-                        message: ReasonPhrases.INTERNAL_SERVER_ERROR,
-                      };
-
+                    // Check if seat is still open
                     const seat = await tx.seat.findUnique({
                       where: body,
                       select: {
@@ -308,14 +350,22 @@ const app = new Elysia()
                         message: ReasonPhrases.NOT_FOUND,
                       };
 
-                    // TODO: If seat is already booked, add to queue
-                    if (seat.status !== SeatStatus.OPEN)
+                    // If seat is already booked or on going, then add to queue
+                    if (seat.status !== SeatStatus.OPEN) {
+                      const queueLength = await redis.lPush(
+                        `queue:${body.id}`,
+                        payload.userId
+                      );
+
                       return {
                         data: null,
-                        metadata: null,
-                        status: StatusCodes.CONFLICT,
-                        message: ReasonPhrases.CONFLICT,
+                        metadata: {
+                          queueLength,
+                        },
+                        status: StatusCodes.CREATED,
+                        message: ReasonPhrases.CREATED,
                       };
+                    }
 
                     const data = await tx.seat.update({
                       where: body,
@@ -324,18 +374,20 @@ const app = new Elysia()
                       },
                     });
 
-                    // Call payment service for payment
-                    await axiosPaymentInstance.post("/invoice", {
-                      seatId: body.id,
-                    });
-
                     return {
                       data,
-                      metadata: null,
+                      metadata: {
+                        queueLength: 0,
+                      },
                       status: StatusCodes.CREATED,
                       message: ReasonPhrases.CREATED,
                     };
                   });
+
+                // Call payment service for payment
+                await axiosPaymentInstance.post("/invoice", {
+                  seatId: body.id,
+                });
 
                 set.status = status;
 
@@ -351,29 +403,99 @@ const app = new Elysia()
                 }),
               }
             )
-            .post("/cancel", async () => {
-              // TODO: Dequeue if there is a queue
-              // TODO: Call payment service for refund
-
-              return {
-                data: null,
-                metadata: null,
-                message: ReasonPhrases.CREATED,
-              };
-            })
             .post(
-              "/webhook-success",
-              async ({ set, db, body, payload }) => {
+              "/cancel",
+              async ({ set, body, payload, db, axiosPaymentInstance }) => {
+                if (!payload) {
+                  set.status = StatusCodes.FORBIDDEN;
+
+                  return {
+                    data: null,
+                    metadata: null,
+                    message: ReasonPhrases.FORBIDDEN,
+                  };
+                }
+
+                // Update seat status to on going
                 const { data, metadata, status, message } =
                   await db.$transaction(async (tx) => {
-                    if (!payload)
+                    // Check if seat is booked
+                    const seat = await tx.seat.findUnique({
+                      where: body,
+                      select: {
+                        status: true,
+                      },
+                    });
+
+                    if (!seat)
                       return {
                         data: null,
                         metadata: null,
-                        status: StatusCodes.FORBIDDEN,
-                        message: ReasonPhrases.FORBIDDEN,
+                        status: StatusCodes.NOT_FOUND,
+                        message: ReasonPhrases.NOT_FOUND,
                       };
 
+                    // If seat is not booked, then return conflict
+                    if (seat.status !== SeatStatus.BOOKED)
+                      return {
+                        data: null,
+                        metadata: null,
+                        status: StatusCodes.CONFLICT,
+                        message: ReasonPhrases.CONFLICT,
+                      };
+
+                    // Update seat status to on going
+                    const data = await tx.seat.update({
+                      where: body,
+                      data: {
+                        status: SeatStatus.ON_GOING,
+                      },
+                    });
+
+                    return {
+                      data,
+                      metadata: null,
+                      status: StatusCodes.CREATED,
+                      message: ReasonPhrases.CREATED,
+                    };
+                  });
+
+                // Call payment service to refund the payment
+                await axiosPaymentInstance.post("/refund", {
+                  seatId: body.id,
+                });
+
+                set.status = status;
+
+                return {
+                  data,
+                  metadata,
+                  message,
+                };
+              },
+              {
+                body: t.Object({
+                  id: t.String(),
+                }),
+              }
+            )
+            .post(
+              "/webhook-success",
+              async ({ set, body, payload, db }) => {
+                if (!payload) {
+                  set.status = StatusCodes.FORBIDDEN;
+
+                  return {
+                    data: null,
+                    metadata: null,
+                    message: ReasonPhrases.FORBIDDEN,
+                  };
+                }
+
+                // Update seat status to booked
+                const { data, metadata, status, message } =
+                  await db.$transaction(async (tx) => {
+                    // Check if seat is still on going
                     const seat = await tx.seat.findUnique({
                       where: body,
                       select: {
@@ -397,6 +519,7 @@ const app = new Elysia()
                         message: ReasonPhrases.CONFLICT,
                       };
 
+                    // Update seat status to booked
                     const data = await tx.seat.update({
                       where: body,
                       data: {
@@ -404,32 +527,34 @@ const app = new Elysia()
                       },
                     });
 
-                    const pdfData = Buffer.from(
-                      JSON.stringify({
-                        userId: payload.userId,
-                      })
-                    ).toString("base64url");
-
-                    const pdfHash = createHmac("sha256", "dhika-jelek")
-                      .update(pdfData)
-                      .digest("base64url");
-
-                    const rawURL = new URL("http://cdn.ticket-pdf.localhost");
-
-                    rawURL.searchParams.append("data", pdfData);
-                    rawURL.searchParams.append("hash", pdfHash);
-
-                    const url = rawURL.toString();
-
                     return {
                       data,
-                      metadata: {
-                        url,
-                      },
+                      metadata: null,
                       status: StatusCodes.CREATED,
                       message: ReasonPhrases.CREATED,
                     };
                   });
+
+                // Call client service to notify user that the ticket is ready
+                const pdfData = Buffer.from(
+                  JSON.stringify({
+                    userId: payload.userId,
+                    seatId: body.id,
+                    status: TicketStatus.SUCCESS,
+                  })
+                ).toString("base64url");
+
+                const pdfHash = createHmac("sha256", "dhika-jelek")
+                  .update(pdfData)
+                  .digest("base64url");
+
+                const rawURL = new URL("http://cdn.ticket-pdf.localhost");
+
+                rawURL.searchParams.append("data", pdfData);
+                rawURL.searchParams.append("hash", pdfHash);
+
+                const url = rawURL.toString();
+                console.log(url); // TODO: Remove this and replace with client service
 
                 set.status = status;
 
@@ -445,15 +570,266 @@ const app = new Elysia()
                 }),
               }
             )
-            .post("/webhook-failed", async () => {
-              // TODO: Dequeue if there is a queue
+            .post(
+              "/webhook-refund",
+              async ({
+                set,
+                body,
+                payload,
+                jwt,
+                db,
+                redis,
+                axiosTicketInstance,
+              }) => {
+                if (!payload) {
+                  set.status = StatusCodes.FORBIDDEN;
 
-              return {
-                data: null,
-                metadata: null,
-                message: ReasonPhrases.CREATED,
-              };
-            })
+                  return {
+                    data: null,
+                    metadata: null,
+                    message: ReasonPhrases.FORBIDDEN,
+                  };
+                }
+
+                // Update seat status to open
+                const { data, metadata, status, message } =
+                  await db.$transaction(async (tx) => {
+                    // Check if seat is still on going
+                    const seat = await tx.seat.findUnique({
+                      where: body,
+                      select: {
+                        status: true,
+                      },
+                    });
+
+                    if (!seat)
+                      return {
+                        data: null,
+                        metadata: null,
+                        status: StatusCodes.NOT_FOUND,
+                        message: ReasonPhrases.NOT_FOUND,
+                      };
+
+                    // If seat is not on going, then return conflict
+                    if (seat.status !== SeatStatus.ON_GOING)
+                      return {
+                        data: null,
+                        metadata: null,
+                        status: StatusCodes.CONFLICT,
+                        message: ReasonPhrases.CONFLICT,
+                      };
+
+                    // Update seat status to open
+                    const data = await tx.seat.update({
+                      where: body,
+                      data: {
+                        status: SeatStatus.OPEN,
+                      },
+                    });
+
+                    return {
+                      data,
+                      metadata: null,
+                      status: StatusCodes.CREATED,
+                      message: ReasonPhrases.CREATED,
+                    };
+                  });
+
+                // Call client service to notify user that the ticket is refunded
+                const pdfData = Buffer.from(
+                  JSON.stringify({
+                    userId: payload.userId,
+                    seatId: body.id,
+                    status: TicketStatus.REFUNDED,
+                  })
+                ).toString("base64url");
+
+                const pdfHash = createHmac("sha256", "dhika-jelek")
+                  .update(pdfData)
+                  .digest("base64url");
+
+                const rawURL = new URL("http://cdn.ticket-pdf.localhost");
+
+                rawURL.searchParams.append("data", pdfData);
+                rawURL.searchParams.append("hash", pdfHash);
+
+                const url = rawURL.toString();
+                console.log(url); // TODO: Remove this and replace with client service
+
+                // Call ticket service for new reservation from queue
+                const userId = await redis.rPop(`queue:${body.id}`);
+
+                if (!userId) {
+                  set.status = status;
+
+                  return {
+                    data,
+                    metadata: null,
+                    message,
+                  };
+                }
+
+                const bearer = await jwt.sign({
+                  userId,
+                  role: Role.USER,
+                });
+
+                await axiosTicketInstance.post(
+                  "/seat/reserve",
+                  {
+                    seatId: body.id,
+                  },
+                  {
+                    headers: {
+                      Authorization: `Bearer ${bearer}`,
+                    },
+                  }
+                );
+
+                set.status = status;
+
+                return {
+                  data,
+                  metadata,
+                  message,
+                };
+              },
+              {
+                body: t.Object({
+                  id: t.String(),
+                }),
+              }
+            )
+            .post(
+              "/webhook-failed",
+              async ({
+                set,
+                body,
+                payload,
+                jwt,
+                db,
+                redis,
+                axiosTicketInstance,
+              }) => {
+                if (!payload) {
+                  set.status = StatusCodes.FORBIDDEN;
+
+                  return {
+                    data: null,
+                    metadata: null,
+                    message: ReasonPhrases.FORBIDDEN,
+                  };
+                }
+
+                // Update seat status to open
+                const { data, metadata, status, message } =
+                  await db.$transaction(async (tx) => {
+                    // Check if seat is still on going
+                    const seat = await tx.seat.findUnique({
+                      where: body,
+                      select: {
+                        status: true,
+                      },
+                    });
+
+                    if (!seat)
+                      return {
+                        data: null,
+                        metadata: null,
+                        status: StatusCodes.NOT_FOUND,
+                        message: ReasonPhrases.NOT_FOUND,
+                      };
+
+                    // If seat is not on going, then return conflict
+                    if (seat.status !== SeatStatus.ON_GOING)
+                      return {
+                        data: null,
+                        metadata: null,
+                        status: StatusCodes.CONFLICT,
+                        message: ReasonPhrases.CONFLICT,
+                      };
+
+                    // Update seat status to open
+                    const data = await tx.seat.update({
+                      where: body,
+                      data: {
+                        status: SeatStatus.OPEN,
+                      },
+                    });
+
+                    return {
+                      data,
+                      metadata: null,
+                      status: StatusCodes.CREATED,
+                      message: ReasonPhrases.CREATED,
+                    };
+                  });
+
+                // Call client service to notify user that the ticket failed to be booked
+                const pdfData = Buffer.from(
+                  JSON.stringify({
+                    userId: payload.userId,
+                    seatId: body.id,
+                    status: TicketStatus.FAILED,
+                  })
+                ).toString("base64url");
+
+                const pdfHash = createHmac("sha256", "dhika-jelek")
+                  .update(pdfData)
+                  .digest("base64url");
+
+                const rawURL = new URL("http://cdn.ticket-pdf.localhost");
+
+                rawURL.searchParams.append("data", pdfData);
+                rawURL.searchParams.append("hash", pdfHash);
+
+                const url = rawURL.toString();
+                console.log(url); // TODO: Remove this and replace with client service
+
+                // Call ticket service for new reservation from queue
+                const userId = await redis.rPop(`queue:${body.id}`);
+
+                if (!userId) {
+                  set.status = status;
+
+                  return {
+                    data,
+                    metadata: null,
+                    message,
+                  };
+                }
+
+                const bearer = await jwt.sign({
+                  userId,
+                  role: Role.USER,
+                });
+
+                await axiosTicketInstance.post(
+                  "/seat/reserve",
+                  {
+                    seatId: body.id,
+                  },
+                  {
+                    headers: {
+                      Authorization: `Bearer ${bearer}`,
+                    },
+                  }
+                );
+
+                set.status = status;
+
+                return {
+                  data,
+                  metadata,
+                  message,
+                };
+              },
+              {
+                body: t.Object({
+                  id: t.String(),
+                }),
+              }
+            )
       )
       .guard(
         {
@@ -473,7 +849,7 @@ const app = new Elysia()
           app
             .post(
               "/",
-              async ({ set, db, body }) => {
+              async ({ set, body, db }) => {
                 const { data, metadata, status, message } =
                   await db.$transaction(async (tx) => {
                     const data = await tx.seat.create({
@@ -506,7 +882,7 @@ const app = new Elysia()
             )
             .put(
               "/:id",
-              async ({ set, db, params, body }) => {
+              async ({ set, params, body, db }) => {
                 const { data, metadata, status, message } =
                   await db.$transaction(async (tx) => {
                     const data = await tx.seat.update({
@@ -543,7 +919,7 @@ const app = new Elysia()
             )
             .delete(
               "/:id",
-              async ({ set, db, params }) => {
+              async ({ set, params, db }) => {
                 const { data, metadata, status, message } =
                   await db.$transaction(async (tx) => {
                     const data = await tx.seat.delete({

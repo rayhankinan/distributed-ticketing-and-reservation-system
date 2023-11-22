@@ -5,13 +5,24 @@ import bodyParser from "npm:body-parser";
 import { expressjwt } from "npm:express-jwt";
 
 import { createInvoiceHandler } from "./invoice-handler.ts";
+import { createRefundHandler } from "./refund-handler.ts";
 
-export const expressApp = express().post(
-  "/invoice",
-  bodyParser.json(),
-  expressjwt({
-    secret: "dhika-jelek",
-    algorithms: ["HS256"],
-  }),
-  createInvoiceHandler
-);
+export const expressApp = express()
+  .post(
+    "/invoice",
+    bodyParser.json(),
+    expressjwt({
+      secret: "dhika-jelek",
+      algorithms: ["HS256"],
+    }),
+    createInvoiceHandler
+  )
+  .post(
+    "/refund",
+    bodyParser.json(),
+    expressjwt({
+      secret: "dhika-jelek",
+      algorithms: ["HS256"],
+    }),
+    createRefundHandler
+  );
