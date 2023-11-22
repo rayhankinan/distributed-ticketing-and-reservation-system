@@ -52,7 +52,7 @@ const createInvoice = async (
   }
 
   const data = await insertToInvoiceAndSendMessage(
-    parsedRequest.data.seatId,
+    parsedRequest.data.id,
     req.auth.userId
   );
 

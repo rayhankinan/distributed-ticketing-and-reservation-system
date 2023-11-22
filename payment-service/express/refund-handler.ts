@@ -52,7 +52,7 @@ const createRefund = async (
   }
 
   const data = await insertToRefundAndSendMessage(
-    parsedRequest.data.seatId,
+    parsedRequest.data.id,
     req.auth.userId
   );
 

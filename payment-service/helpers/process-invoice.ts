@@ -41,7 +41,9 @@ const processInvoice = async (invoiceId: string) => {
       id: parsedInvoice.data.seatId,
     });
   } else {
-    console.log(`>> Failed processing invoice ID ${invoiceId}`);
+    console.log(
+      `>> Failed processing invoice ID ${invoiceId}: deliberate error`
+    );
     await axiosInstance.post(WebhookRoutes.WEBHOOK_FAILED, {
       id: parsedInvoice.data.seatId,
     });

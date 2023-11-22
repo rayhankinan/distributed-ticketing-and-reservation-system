@@ -345,7 +345,9 @@ const app = new Elysia()
                     if (!seat)
                       return {
                         data: null,
-                        metadata: null,
+                        metadata: {
+                          queueLength: 0,
+                        },
                         status: StatusCodes.NOT_FOUND,
                         message: ReasonPhrases.NOT_FOUND,
                       };
@@ -384,10 +386,19 @@ const app = new Elysia()
                     };
                   });
 
+                // If queue length is more than 0, then immediately return
+                if (metadata.queueLength > 0) {
+                  set.status = status;
+
+                  return {
+                    data,
+                    metadata,
+                    message,
+                  };
+                }
+
                 // Call payment service for payment
-                await axiosPaymentInstance.post("/invoice", {
-                  seatId: body.id,
-                });
+                await axiosPaymentInstance.post("/invoice", body);
 
                 set.status = status;
 
@@ -461,9 +472,7 @@ const app = new Elysia()
                   });
 
                 // Call payment service to refund the payment
-                await axiosPaymentInstance.post("/refund", {
-                  seatId: body.id,
-                });
+                await axiosPaymentInstance.post("/refund", body);
 
                 set.status = status;
 
@@ -674,17 +683,11 @@ const app = new Elysia()
                   role: Role.USER,
                 });
 
-                await axiosTicketInstance.post(
-                  "/seat/reserve",
-                  {
-                    seatId: body.id,
+                await axiosTicketInstance.post("/seat/reserve", body, {
+                  headers: {
+                    Authorization: `Bearer ${bearer}`,
                   },
-                  {
-                    headers: {
-                      Authorization: `Bearer ${bearer}`,
-                    },
-                  }
-                );
+                });
 
                 set.status = status;
 
@@ -804,17 +807,11 @@ const app = new Elysia()
                   role: Role.USER,
                 });
 
-                await axiosTicketInstance.post(
-                  "/seat/reserve",
-                  {
-                    seatId: body.id,
+                await axiosTicketInstance.post("/seat/reserve", body, {
+                  headers: {
+                    Authorization: `Bearer ${bearer}`,
                   },
-                  {
-                    headers: {
-                      Authorization: `Bearer ${bearer}`,
-                    },
-                  }
-                );
+                });
 
                 set.status = status;
 
