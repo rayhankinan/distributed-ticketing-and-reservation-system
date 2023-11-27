@@ -39,6 +39,10 @@ const styles = StyleSheet.create({
     fontSize: "48px",
     fontWeight: "bold",
   },
+  miniText: {
+    fontFamily: "Oswald",
+    fontSize: "12px",
+  },
   qr: {
     width: 300,
     height: 300,
@@ -71,6 +75,8 @@ const Viewer = ({ userId, seatId, status }: z.infer<typeof pdfSchema>) => {
             </View>
             <View style={styles.infoContainer}>
               <Text style={styles.heading}>Here is your ticket!</Text>
+              <Text style={styles.miniText}>User ID: {userId}</Text>
+              <Text style={styles.miniText}>Status: {status}</Text>
               <Image src={qrUrl} style={styles.qr} />
             </View>
           </Page>
@@ -85,7 +91,9 @@ const Viewer = ({ userId, seatId, status }: z.infer<typeof pdfSchema>) => {
             <Image src="/concert.png" style={styles.concertImage} />
           </View>
           <View style={styles.infoContainer}>
-            <Text style={styles.heading}>Your ticket is invalid!</Text>
+            <Text style={styles.heading}>Your ticket cannot be used!</Text>
+            <Text style={styles.miniText}>User ID: {userId}</Text>
+            <Text style={styles.miniText}>Status: {status}</Text>
           </View>
         </Page>
       </Document>
