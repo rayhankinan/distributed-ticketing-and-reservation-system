@@ -5,7 +5,7 @@ import {
 import dynamic from "next/dynamic";
 import { createHmac } from "crypto";
 import { z } from "zod";
-import pdfSchema from "@/schemas";
+import { pdfSchema } from "@/schemas";
 
 const Viewer = dynamic(() => import("@/components/Viewer"), {
   ssr: false,

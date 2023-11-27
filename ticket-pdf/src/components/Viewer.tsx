@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import {
   Page,
   Text,
@@ -9,9 +10,9 @@ import {
   View,
 } from "@react-pdf/renderer";
 import { z } from "zod";
-import pdfSchema from "@/schemas";
 import QRCode from "qrcode";
-import { useState, useEffect } from "react";
+import { pdfSchema } from "@/schemas";
+import { TicketStatus } from "@/enum";
 
 // Register font
 Font.register({
@@ -65,7 +66,7 @@ const Viewer = ({ userId, seatId, status }: z.infer<typeof pdfSchema>) => {
 
   if (!qrUrl) return <h1 style={styles.heading}>Loading ...</h1>;
 
-  if (status === "SUCCESS") {
+  if (status !== TicketStatus.SUCCESS)
     return (
       <PDFViewer style={styles.viewer}>
         <Document>
@@ -74,16 +75,16 @@ const Viewer = ({ userId, seatId, status }: z.infer<typeof pdfSchema>) => {
               <Image src="/concert.png" style={styles.concertImage} />
             </View>
             <View style={styles.infoContainer}>
-              <Text style={styles.heading}>Here is your ticket!</Text>
+              <Text style={styles.heading}>Your ticket cannot be used!</Text>
               <Text style={styles.miniText}>User ID: {userId}</Text>
               <Text style={styles.miniText}>Status: {status}</Text>
-              <Image src={qrUrl} style={styles.qr} />
             </View>
           </Page>
         </Document>
       </PDFViewer>
     );
-  } else {
+
+  return (
     <PDFViewer style={styles.viewer}>
       <Document>
         <Page size="A4" style={styles.body}>
@@ -91,14 +92,15 @@ const Viewer = ({ userId, seatId, status }: z.infer<typeof pdfSchema>) => {
             <Image src="/concert.png" style={styles.concertImage} />
           </View>
           <View style={styles.infoContainer}>
-            <Text style={styles.heading}>Your ticket cannot be used!</Text>
+            <Text style={styles.heading}>Here is your ticket!</Text>
             <Text style={styles.miniText}>User ID: {userId}</Text>
             <Text style={styles.miniText}>Status: {status}</Text>
+            <Image src={qrUrl} style={styles.qr} />
           </View>
         </Page>
       </Document>
-    </PDFViewer>;
-  }
+    </PDFViewer>
+  );
 };
 
 export default Viewer;
