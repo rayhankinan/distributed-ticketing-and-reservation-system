@@ -5,9 +5,13 @@ import {
   StyleSheet,
   PDFViewer,
   Font,
+  Image,
+  View,
 } from "@react-pdf/renderer";
 import { z } from "zod";
 import pdfSchema from "@/schemas";
+import QRCode from "qrcode";
+import { useState, useEffect } from "react";
 
 // Register font
 Font.register({
@@ -22,63 +26,71 @@ const styles = StyleSheet.create({
     height: "100vh",
   },
   body: {
-    paddingTop: 35,
-    paddingBottom: 65,
-    paddingHorizontal: 35,
+    backgroundColor: "#E7F8FC",
   },
-  title: {
-    fontSize: 24,
-    textAlign: "center",
+  concertImage: {
+    width: "100%",
+  },
+  infoContainer: {
+    padding: 32,
+  },
+  heading: {
     fontFamily: "Oswald",
+    fontSize: "48px",
+    fontWeight: "bold",
   },
-  author: {
-    fontSize: 12,
-    textAlign: "center",
-    marginBottom: 40,
-  },
-  subtitle: {
-    fontSize: 18,
-    margin: 12,
-    fontFamily: "Oswald",
-  },
-  text: {
-    margin: 12,
-    fontSize: 14,
-    textAlign: "justify",
-    fontFamily: "Times-Roman",
-  },
-  image: {
-    marginVertical: 15,
-    marginHorizontal: 100,
-  },
-  header: {
-    fontSize: 12,
-    marginBottom: 20,
-    textAlign: "center",
-    color: "grey",
-  },
-  pageNumber: {
-    position: "absolute",
-    fontSize: 12,
-    bottom: 30,
-    left: 0,
-    right: 0,
-    textAlign: "center",
-    color: "grey",
+  qr: {
+    width: 300,
+    height: 300,
+    marginTop: 16,
+    marginHorizontal: "auto",
   },
 });
 
 // Create Document Component
-const Viewer = ({ userId, seatId, status }: z.infer<typeof pdfSchema>) => (
-  <PDFViewer style={styles.viewer}>
-    <Document>
-      <Page style={styles.body}>
-        <Text style={styles.header}>User ID: {userId}</Text>
-        <Text style={styles.header}>Ticket ID: {seatId}</Text>
-        <Text style={styles.header}>Status: {status}</Text>
-      </Page>
-    </Document>
-  </PDFViewer>
-);
+const Viewer = ({ userId, seatId, status }: z.infer<typeof pdfSchema>) => {
+  const [qrUrl, setQrUrl] = useState<string>("");
+
+  useEffect(() => {
+    QRCode.toDataURL(seatId, function (err, url) {
+      if (!err) {
+        setQrUrl(url);
+      }
+    });
+  }, []);
+
+  if (!qrUrl) return <h1 style={styles.heading}>Loading ...</h1>;
+
+  if (status === "SUCCESS") {
+    return (
+      <PDFViewer style={styles.viewer}>
+        <Document>
+          <Page size="A4" style={styles.body}>
+            <View>
+              <Image src="/concert.png" style={styles.concertImage} />
+            </View>
+            <View style={styles.infoContainer}>
+              <Text style={styles.heading}>Here is your ticket!</Text>
+              <Image src={qrUrl} style={styles.qr} />
+            </View>
+          </Page>
+        </Document>
+      </PDFViewer>
+    );
+  } else {
+    <PDFViewer style={styles.viewer}>
+      <Document>
+        <Page size="A4" style={styles.body}>
+          <View>
+            <Image src="/concert.png" style={styles.concertImage} />
+          </View>
+          <View style={styles.infoContainer}>
+            <Text style={styles.heading}>Your ticket is invalid!</Text>
+          </View>
+        </Page>
+      </Document>
+    </PDFViewer>;
+  }
+};
 
 export default Viewer;
