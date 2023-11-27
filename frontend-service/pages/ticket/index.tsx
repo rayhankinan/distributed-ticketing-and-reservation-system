@@ -1,5 +1,5 @@
 import { Divider, Button } from "@nextui-org/react";
-import { Select, SelectItem } from "@nextui-org/react";
+import { Select, SelectSection, SelectItem } from "@nextui-org/react";
 import Link from "next/link";
 
 const dummyEvents = [
@@ -30,14 +30,19 @@ export default function Page() {
       <Divider className="mt-[1rem]" />
       <Select
         label="Pilih event"
-        className=""
+        className="dark"
+        classNames={{
+          listboxWrapper: "dark",
+          listbox: "dark",
+          popoverContent: "dark",
+        }}
       >
         {dummyEvents.map((e) => {
           return (
             <SelectItem
               key={e.id}
               value={e.id}
-              className=""
+              className="dark text-foreground"
             >
               {e.name}
             </SelectItem>
