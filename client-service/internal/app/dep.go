@@ -35,7 +35,7 @@ func NewDep() *Dep {
 }
 
 func NewDatabaseConn() (*gorm.DB, error) {
-	dsn := "host=localhost user=client-user password=client-password dbname=client port=5434 sslmode=disable"
+	dsn := "host=client-database user=client-user password=client-password dbname=client port=5432 sslmode=disable"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return nil, err

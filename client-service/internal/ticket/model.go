@@ -7,6 +7,7 @@ import (
 type Ticket struct {
 	ID     uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
 	UID    uuid.UUID
+	SeatID uuid.UUID
 	Status TicketStatus
 	Link   string
 }

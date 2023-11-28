@@ -37,7 +37,6 @@ func NewHandle(useCase Usecase, logger *logrus.Logger) Handle {
 func (h *Handle) CreateUserHandler(c echo.Context) error {
 	var req CreateUserRequest
 	ctx := c.Request().Context()
-
 	if err := c.Bind(&req); err != nil {
 		h.logger.Error(err)
 		return c.JSON(http.StatusBadRequest, handler.ErrorResponse{Message: "Invalid content type"})

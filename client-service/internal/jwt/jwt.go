@@ -1,6 +1,7 @@
 package jwt
 
 import (
+	"errors"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -30,4 +31,26 @@ func GenerateJWT(userID uuid.UUID, role string) (string, error) {
 	tokenString, err := token.SignedString(jwtKey)
 
 	return tokenString, err
+}
+
+func GetUserIDFromJWT(tokenString string) (string, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return jwtKey, nil
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok || !token.Valid {
+		return "", errors.New("invalid token")
+	}
+
+	userID, ok := claims["userId"].(string)
+	if !ok {
+		return "", errors.New("invalid user ID")
+	}
+
+	return userID, nil
 }

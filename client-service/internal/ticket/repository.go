@@ -12,6 +12,7 @@ type Repository interface {
 	GetByID(ctx context.Context, id uuid.UUID) (Ticket, error)
 	Update(ctx context.Context, ticket Ticket) (Ticket, error)
 	Delete(ctx context.Context, id uuid.UUID) (Ticket, error)
+	UpdateByUserID(ctx context.Context, userID uuid.UUID, ticket Ticket) (Ticket, error)
 }
 
 type repository struct {
@@ -53,5 +54,22 @@ func (r *repository) Delete(ctx context.Context, id uuid.UUID) (Ticket, error) {
 	if err = r.db.WithContext(ctx).Delete(&Ticket{}, id).Error; err != nil {
 		return Ticket{}, err
 	}
+	return ticket, nil
+}
+
+func (r *repository) UpdateByUserID(ctx context.Context, userID uuid.UUID, updatedTicket Ticket) (Ticket, error) {
+	var ticket Ticket
+
+	if err := r.db.Where("uid = ? AND status = ?", userID, OnGoing).First(&ticket).Error; err != nil {
+		return Ticket{}, err
+	}
+
+	ticket.Status = updatedTicket.Status
+	ticket.Link = updatedTicket.Link
+
+	if err := r.db.Save(&ticket).Error; err != nil {
+		return Ticket{}, err
+	}
+
 	return ticket, nil
 }

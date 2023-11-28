@@ -43,6 +43,11 @@ func (u *Usecase) GetByID(ctx context.Context, id uuid.UUID) (Client, error) {
 }
 
 func (u *Usecase) Update(ctx context.Context, client Client) (Client, error) {
+	hashedPassword, err := security.HashPassword(client.Password)
+	if err != nil {
+		return Client{}, err
+	}
+	client.Password = hashedPassword
 	updatedClient, err := u.repo.Update(ctx, client)
 	if err != nil {
 		return Client{}, err

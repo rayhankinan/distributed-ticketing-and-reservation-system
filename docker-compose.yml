@@ -77,6 +77,7 @@ services:
     volumes:
       - ./client-service:/app
     labels:
+      - "traefik.enable=true"
       - "traefik.http.routers.client-service.rule=Host(`api.client-service.localhost`)"
       - "traefik.http.routers.client-service.entrypoints=web"
     hostname: api.client-service.docker-compose
