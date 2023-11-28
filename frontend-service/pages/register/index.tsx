@@ -1,3 +1,5 @@
+import { useAuth } from "@/hooks/use-auth";
+import { useAppSelector } from "@/redux/store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Button,
@@ -11,7 +13,7 @@ import {
 import axios from "axios";
 import Link from "next/link";
 import Router from "next/router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -25,6 +27,14 @@ type RegisterSchemaType = z.infer<typeof registerSchema>;
 
 export default function Page() {
   const [isLoading, setIsLoading] = useState(false);
+
+  const token = useAppSelector((state) => state.user.token);
+
+  useEffect(() => {
+    if (token) {
+      Router.push("/home");
+    }
+  }, [token]);
 
   const {
     control,

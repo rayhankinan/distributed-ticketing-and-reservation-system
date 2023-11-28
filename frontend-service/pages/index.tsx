@@ -1,5 +1,5 @@
 import { login } from "@/redux/slices/user";
-import { RootState, useAppDispatch, useAppSelector } from "@/redux/store";
+import { useAppDispatch, useAppSelector } from "@/redux/store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Button,
@@ -14,9 +14,8 @@ import axios from "axios";
 import Link from "next/link";
 
 import Router from "next/router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
-import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -32,6 +31,12 @@ export default function Page() {
 
   const token = useAppSelector((state) => state.user.token);
   const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    if (token) {
+      Router.push("/home");
+    }
+  }, [token]);
 
   const {
     control,
