@@ -1,12 +1,29 @@
 import { Input, Divider, Button, CardFooter } from "@nextui-org/react";
 import { Card, CardHeader, CardBody } from "@nextui-org/react";
+import { useForm, Controller, SubmitHandler } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import Link from "next/link";
 
-import Router from "next/router";
+const registerSchema = z.object({
+  username: z.string().min(1),
+  password: z.string().min(1),
+});
+
+type RegisterSchemaType = z.infer<typeof registerSchema>;
 
 export default function Page() {
-  const handleRegister = () => {
-    Router.push("/home");
+  const {
+    control,
+    handleSubmit,
+    formState: { isValid },
+  } = useForm<RegisterSchemaType>({
+    resolver: zodResolver(registerSchema),
+    mode: "onChange",
+  });
+
+  const onRegister: SubmitHandler<RegisterSchemaType> = (data) => {
+    console.log(data);
   };
 
   return (
@@ -21,12 +38,40 @@ export default function Page() {
         <Divider className="my-[1rem]" />
         <CardBody>
           <div className="flex flex-col gap-[1rem]">
-            <Input type="text" label="Username" placeholder="johndoe" />
-            <Input type="password" label="Password" />
+            <Controller
+              control={control}
+              name="username"
+              render={({ field: { onChange, value } }) => (
+                <Input
+                  type="text"
+                  label="Username"
+                  placeholder="johndoe"
+                  value={value}
+                  onValueChange={onChange}
+                  className="w-full"
+                />
+              )}
+            />
+            <Controller
+              control={control}
+              name="password"
+              render={({ field: { onChange, value } }) => (
+                <Input
+                  type="password"
+                  label="Password"
+                  value={value}
+                  onValueChange={onChange}
+                  className="w-full"
+                />
+              )}
+            />
+
             <Button
               onClick={() => {
-                handleRegister();
+                handleSubmit(onRegister)();
               }}
+              isDisabled={!isValid}
+              className="w-full"
             >
               Buat akun
             </Button>
