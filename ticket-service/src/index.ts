@@ -368,6 +368,7 @@ const app = new Elysia()
                     const seat = await tx.seat.findUnique({
                       where: body,
                       select: {
+                        id: true,
                         status: true,
                       },
                     });
@@ -385,7 +386,7 @@ const app = new Elysia()
                     // If seat is already booked or on going, then add to queue
                     if (seat.status !== SeatStatus.OPEN) {
                       const queueLength = await redis.lPush(
-                        `queue:${body.id}`,
+                        `queue:${seat.id}`,
                         payload.userId
                       );
 
@@ -597,7 +598,7 @@ const app = new Elysia()
                 const pdfData = Buffer.from(
                   JSON.stringify({
                     userId: payload.userId,
-                    seatId: body.id,
+                    seatId: data.id,
                     status: TicketStatus.SUCCESS,
                   })
                 ).toString("base64url");
@@ -615,7 +616,7 @@ const app = new Elysia()
 
                 // Call ticket service to notify user that the ticket is ready
                 await axiosClientInstance.patch("/v1/ticket/webhook", {
-                  seat_id: body.id,
+                  seat_id: data.id,
                   status: TicketStatus.SUCCESS,
                   link: url,
                 });
@@ -714,7 +715,7 @@ const app = new Elysia()
                 const pdfData = Buffer.from(
                   JSON.stringify({
                     userId: payload.userId,
-                    seatId: body.id,
+                    seatId: data.id,
                     status: TicketStatus.REFUNDED,
                   })
                 ).toString("base64url");
@@ -732,13 +733,13 @@ const app = new Elysia()
 
                 // Call ticket service to notify user that the ticket is refunded
                 await axiosClientInstance.patch("/v1/ticket/webhook", {
-                  seat_id: body.id,
+                  seat_id: data.id,
                   status: TicketStatus.REFUNDED,
                   link: url,
                 });
 
                 // Call ticket service for new reservation from queue
-                const userId = await redis.rPop(`queue:${body.id}`);
+                const userId = await redis.rPop(`queue:${data.id}`);
 
                 if (!userId) {
                   set.status = status;
@@ -855,7 +856,7 @@ const app = new Elysia()
                 const pdfData = Buffer.from(
                   JSON.stringify({
                     userId: payload.userId,
-                    seatId: body.id,
+                    seatId: data.id,
                     status: TicketStatus.FAILED,
                   })
                 ).toString("base64url");
@@ -873,13 +874,13 @@ const app = new Elysia()
 
                 // Call ticket service to notify user that the ticket failed to be booked
                 await axiosClientInstance.patch("/v1/ticket/webhook", {
-                  seat_id: body.id,
+                  seat_id: data.id,
                   status: TicketStatus.FAILED,
                   link: url,
                 });
 
                 // Call ticket service for new reservation from queue
-                const userId = await redis.rPop(`queue:${body.id}`);
+                const userId = await redis.rPop(`queue:${data.id}`);
 
                 if (!userId) {
                   set.status = status;
