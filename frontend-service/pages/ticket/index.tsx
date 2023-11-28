@@ -5,7 +5,12 @@ import { useSeats } from "@/hooks/use-seats";
 import {
   Button,
   Card,
-  CardBody, CardFooter, CardHeader, Divider, Select, SelectItem
+  CardBody,
+  CardFooter,
+  CardHeader,
+  Divider,
+  Select,
+  SelectItem,
 } from "@nextui-org/react";
 import axios from "axios";
 import { useEffect, useState } from "react";

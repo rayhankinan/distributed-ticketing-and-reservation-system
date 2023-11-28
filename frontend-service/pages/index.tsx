@@ -8,7 +8,7 @@ import {
   CardFooter,
   CardHeader,
   Divider,
-  Input
+  Input,
 } from "@nextui-org/react";
 import axios from "axios";
 import Link from "next/link";
