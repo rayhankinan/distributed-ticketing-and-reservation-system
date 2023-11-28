@@ -1,5 +1,12 @@
 import { useAuth } from "@/hooks/use-auth";
-import { Button, Card, CardBody, CardFooter, CardHeader, Divider } from "@nextui-org/react";
+import {
+  Button,
+  Card,
+  CardBody,
+  CardFooter,
+  CardHeader,
+  Divider,
+} from "@nextui-org/react";
 import Link from "next/link";
 
 export default function Page() {
