@@ -37,7 +37,7 @@ func New(l *logrus.Logger) Server {
 }
 
 func (s *server) Start() error {
-	conn := fmt.Sprintf(":%s", "3001")
+	conn := fmt.Sprintf(":%s", "8080")
 	return s.echo.Start(conn)
 }
 
