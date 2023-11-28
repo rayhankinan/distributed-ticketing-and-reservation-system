@@ -22,8 +22,8 @@ func (u *Usecase) Create(ctx context.Context, ticket Ticket) (Ticket, error) {
 	return createdTicket, nil
 }
 
-func (u *Usecase) GetByID(ctx context.Context, id uuid.UUID) (Ticket, error) {
-	ticket, err := u.repo.GetByID(ctx, id)
+func (u *Usecase) GetByUserId(ctx context.Context, id uuid.UUID) (Ticket, error) {
+	ticket, err := u.repo.GetByUserId(ctx, id)
 	if err != nil {
 		return Ticket{}, err
 	}

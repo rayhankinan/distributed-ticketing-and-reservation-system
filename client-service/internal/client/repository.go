@@ -24,36 +24,38 @@ func NewRepository(db *gorm.DB) Repository {
 }
 
 func (r *repository) Create(ctx context.Context, client Client) (Client, error) {
-	err := r.db.WithContext(ctx).Create(&client).Error
-	if err != nil {
+	if err := r.db.WithContext(ctx).Create(&client).Error; err != nil {
 		return Client{}, err
 	}
+
 	return client, nil
 }
 
 func (r *repository) GetByID(ctx context.Context, id uuid.UUID) (Client, error) {
 	var client Client
-	err := r.db.WithContext(ctx).First(&client, "id = ?", id).Error
-	return client, err
+
+	if err := r.db.WithContext(ctx).First(&client, "id = ?", id).Error; err != nil {
+		return Client{}, err
+	}
+
+	return client, nil
 }
 
 func (r *repository) Update(ctx context.Context, client Client) (Client, error) {
-	err := r.db.WithContext(ctx).Save(&client).Error
-	if err != nil {
+	if err := r.db.WithContext(ctx).Save(&client).Error; err != nil {
 		return Client{}, err
 	}
+
 	return client, nil
 }
 
 func (r *repository) Delete(ctx context.Context, id uuid.UUID) (Client, error) {
 	var client Client
-	err := r.db.WithContext(ctx).First(&client, "id = ?", id).Error
-	if err != nil {
+
+	if err := r.db.WithContext(ctx).Delete(&client, id).Error; err != nil {
 		return Client{}, err
 	}
-	if err = r.db.WithContext(ctx).Delete(&Client{}, id).Error; err != nil {
-		return Client{}, err
-	}
+
 	return client, nil
 }
 

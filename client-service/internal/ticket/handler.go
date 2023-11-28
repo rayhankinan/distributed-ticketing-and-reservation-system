@@ -124,15 +124,34 @@ func (h *Handle) CreateTicketHandler(c echo.Context) error {
 }
 
 func (h *Handle) GetTicketHandler(c echo.Context) error {
-	paramId := c.Param("id")
-	id, err := uuid.Parse(paramId)
+	authHeader := c.Request().Header.Get("Authorization")
+	if authHeader == "" {
+		h.logger.Error("Unauthorized")
+		return c.JSON(http.StatusUnauthorized, handler.ErrorResponse{Message: "Unauthorized"})
+	}
+
+	headerParts := strings.Split(authHeader, " ")
+	if len(headerParts) != 2 {
+		h.logger.Error("Unauthorized")
+		return c.JSON(http.StatusUnauthorized, handler.ErrorResponse{Message: "Unauthorized"})
+	}
+
+	token := headerParts[1]
+	parsedUID, err := jwt.GetUserIDFromJWT(token)
 	if err != nil {
 		h.logger.Error(err)
 		return c.JSON(http.StatusBadRequest, handler.ErrorResponse{Message: "Invalid ID"})
 	}
+
+	UID, err := uuid.Parse(parsedUID)
+	if err != nil {
+		h.logger.Error(err)
+		return c.JSON(http.StatusBadRequest, handler.ErrorResponse{Message: "Invalid ID"})
+	}
+
 	ctx := c.Request().Context()
 
-	res, err := h.ticketUsecase.GetByID(ctx, id)
+	res, err := h.ticketUsecase.GetByUserId(ctx, UID)
 	if err != nil {
 		h.logger.Error(err)
 		return c.JSON(http.StatusInternalServerError, handler.ErrorResponse{Message: err.Error()})
