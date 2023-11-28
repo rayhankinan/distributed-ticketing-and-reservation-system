@@ -68,7 +68,7 @@ func (u *Usecase) Login(username, password string) (string, error) {
 		return "", errors.New("invalid credentials")
 	}
 
-	token, err := jwt.GenerateJWT(user.ID, user.Role)
+	token, err := jwt.GenerateJWT(user.ID, string(user.Role))
 	if err != nil {
 		return "", err
 	}

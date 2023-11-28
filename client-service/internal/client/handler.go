@@ -52,7 +52,7 @@ func (h *Handle) CreateUserHandler(c echo.Context) error {
 	client := Client{
 		Username: req.Username,
 		Password: req.Password,
-		Role:     "client",
+		Role:     User,
 	}
 
 	res, err := h.useCase.Create(ctx, client)
