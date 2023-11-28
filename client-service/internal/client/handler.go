@@ -30,8 +30,8 @@ func (u UpdateUserRequest) CheckEmpty() bool {
 	return u.Username == "" && u.Password == ""
 }
 
-func NewHandle(useCase Usecase, logger *logrus.Logger) *Handle {
-	return &Handle{useCase: useCase, logger: logger}
+func NewHandle(useCase Usecase, logger *logrus.Logger) Handle {
+	return Handle{useCase: useCase, logger: logger}
 }
 
 func (h *Handle) CreateUserHandler(c echo.Context) error {
@@ -52,6 +52,7 @@ func (h *Handle) CreateUserHandler(c echo.Context) error {
 	client := Client{
 		Username: req.Username,
 		Password: req.Password,
+		Role:     "client",
 	}
 
 	res, err := h.useCase.Create(ctx, client)
