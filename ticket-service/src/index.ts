@@ -428,13 +428,19 @@ const app = new Elysia()
                 }
 
                 // Call payment service for payment
-                await axiosPaymentInstance.post("/invoice", body);
+                const response = await axiosPaymentInstance.post<Object>(
+                  "/invoice",
+                  body
+                );
 
                 set.status = status;
 
                 return {
                   data,
-                  metadata,
+                  metadata: {
+                    ...metadata,
+                    invoice: response.data,
+                  },
                   message,
                 };
               },
@@ -512,13 +518,18 @@ const app = new Elysia()
                 }
 
                 // Call payment service to refund the payment
-                await axiosPaymentInstance.post("/refund", body);
+                const response = await axiosPaymentInstance.post<Object>(
+                  "/refund",
+                  body
+                );
 
                 set.status = status;
 
                 return {
                   data,
-                  metadata,
+                  metadata: {
+                    invoice: response.data,
+                  },
                   message,
                 };
               },
