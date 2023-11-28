@@ -1,9 +1,20 @@
-import { Input, Divider, Button, CardFooter } from "@nextui-org/react";
-import { Card, CardHeader, CardBody } from "@nextui-org/react";
-import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import {
+  Button,
+  Card,
+  CardBody,
+  CardFooter,
+  CardHeader,
+  Divider,
+  Input,
+} from "@nextui-org/react";
+import axios from "axios";
 import Link from "next/link";
+import Router from "next/router";
+import { useState } from "react";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
 
 const registerSchema = z.object({
   username: z.string().min(1),
@@ -13,6 +24,8 @@ const registerSchema = z.object({
 type RegisterSchemaType = z.infer<typeof registerSchema>;
 
 export default function Page() {
+  const [isLoading, setIsLoading] = useState(false);
+
   const {
     control,
     handleSubmit,
@@ -22,8 +35,26 @@ export default function Page() {
     mode: "onChange",
   });
 
-  const onRegister: SubmitHandler<RegisterSchemaType> = (data) => {
-    console.log(data);
+  const onRegister: SubmitHandler<RegisterSchemaType> = async (data) => {
+    try {
+      setIsLoading(true);
+
+      await axios.post(`http://api.client-service.localhost/v1/client`, {
+        username: data.username,
+        password: data.password,
+      });
+
+      toast.success("Akun berhasil dibuat! Silakan melakukan login.", {
+        duration: 2000,
+      });
+
+      Router.push("/");
+    } catch (error) {
+      console.log(error);
+      toast.error("Akun gagal dibuat.", { duration: 2000 });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -70,7 +101,7 @@ export default function Page() {
               onClick={() => {
                 handleSubmit(onRegister)();
               }}
-              isDisabled={!isValid}
+              isDisabled={!isValid || isLoading}
               className="w-full"
             >
               Buat akun
