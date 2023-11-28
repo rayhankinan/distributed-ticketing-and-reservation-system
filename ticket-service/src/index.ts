@@ -24,7 +24,13 @@ const app = new Elysia()
   )
   .use(bearer())
   .use(serverTiming())
-  .use(cors())
+  .use(
+    cors({
+      origin: "*",
+      methods: ["GET", "POST", "PUT", "DELETE"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+    })
+  )
   .derive(async ({ jwt, bearer }) => {
     const payload = await jwt.verify(bearer);
 
