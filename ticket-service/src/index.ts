@@ -12,6 +12,15 @@ import { createHmac } from "crypto";
 import { Role, TicketStatus } from "./enum";
 
 const app = new Elysia()
+  .onError(({ set }) => {
+    set.status = StatusCodes.INTERNAL_SERVER_ERROR;
+
+    return {
+      data: null,
+      metadata: null,
+      message: ReasonPhrases.INTERNAL_SERVER_ERROR,
+    };
+  })
   .use(
     jwt({
       secret: "dhika-jelek",
