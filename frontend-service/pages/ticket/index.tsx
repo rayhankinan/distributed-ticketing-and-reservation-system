@@ -1,37 +1,14 @@
 import { Divider, Button, Card, CardBody, CardHeader } from "@nextui-org/react";
 import { Select, SelectItem } from "@nextui-org/react";
-
-const dummyEvents = [
-  {
-    id: 1,
-    name: "Coldplay",
-  },
-  {
-    id: 2,
-    name: "YOASOBI",
-  },
-  {
-    id: 3,
-    name: "Eve",
-  },
-];
-
-const dummySeats = [
-  {
-    id: 1,
-    name: "A1",
-  },
-  {
-    id: 2,
-    name: "A2",
-  },
-  {
-    id: 3,
-    name: "A3",
-  },
-];
+import { useEvents } from "@/hooks/use-events";
+import { useState } from "react";
 
 export default function Page() {
+  const { events } = useEvents();
+
+  const [selectedEventId, setSelectedEventId] = useState("");
+  const [selectedTicketId, setSelectedTicketId] = useState("");
+
   return (
     <div className="max-w-[1160px] mx-auto p-[1rem] py-[2rem] min-h-screen flex items-center">
       <Card className="p-[1rem] w-full">
@@ -56,8 +33,12 @@ export default function Page() {
               listbox: "dark",
               popoverContent: "dark",
             }}
+            value={selectedEventId}
+            onChange={(e) => {
+              setSelectedEventId(e.target.value);
+            }}
           >
-            {dummyEvents.map((e) => {
+            {events.map((e) => {
               return (
                 <SelectItem
                   key={e.id}
@@ -78,8 +59,10 @@ export default function Page() {
               listbox: "dark",
               popoverContent: "dark",
             }}
+            disabled={!selectedEventId}
+            placeholder={!selectedEventId ? "Pilih event terlebih dahulu" : ""}
           >
-            {dummySeats.map((e) => {
+            {/* {dummySeats.map((e) => {
               return (
                 <SelectItem
                   key={e.id}
@@ -89,7 +72,7 @@ export default function Page() {
                   {e.name}
                 </SelectItem>
               );
-            })}
+            })} */}
           </Select>
           <Button className="mt-[1rem] w-full">Reservasi seat</Button>
         </CardBody>
