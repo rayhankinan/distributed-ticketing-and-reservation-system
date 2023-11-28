@@ -1,10 +1,8 @@
 import { z } from "zod";
 import { TicketStatus } from "@/enum";
 
-const pdfSchema = z.object({
+export const pdfSchema = z.object({
   userId: z.string().uuid(),
   seatId: z.string().uuid(),
   status: z.nativeEnum(TicketStatus),
 });
-
-export default pdfSchema;
