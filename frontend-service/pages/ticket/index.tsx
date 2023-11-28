@@ -1,13 +1,26 @@
-import { Divider, Button, Card, CardBody, CardHeader } from "@nextui-org/react";
+import {
+  Divider,
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  select,
+} from "@nextui-org/react";
 import { Select, SelectItem } from "@nextui-org/react";
 import { useEvents } from "@/hooks/use-events";
-import { useState } from "react";
+import { useSeats } from "@/hooks/use-seats";
+import { useState, useEffect } from "react";
 
 export default function Page() {
-  const { events } = useEvents();
-
   const [selectedEventId, setSelectedEventId] = useState("");
   const [selectedTicketId, setSelectedTicketId] = useState("");
+
+  const { events } = useEvents();
+  const { seats } = useSeats(selectedEventId);
+
+  useEffect(() => {
+    setSelectedTicketId("");
+  }, [selectedEventId]);
 
   return (
     <div className="max-w-[1160px] mx-auto p-[1rem] py-[2rem] min-h-screen flex items-center">
@@ -59,10 +72,14 @@ export default function Page() {
               listbox: "dark",
               popoverContent: "dark",
             }}
-            disabled={!selectedEventId}
+            isDisabled={!selectedEventId}
             placeholder={!selectedEventId ? "Pilih event terlebih dahulu" : ""}
+            value={selectedTicketId}
+            onChange={(e) => {
+              setSelectedTicketId(e.target.value);
+            }}
           >
-            {/* {dummySeats.map((e) => {
+            {seats.map((e) => {
               return (
                 <SelectItem
                   key={e.id}
@@ -72,9 +89,14 @@ export default function Page() {
                   {e.name}
                 </SelectItem>
               );
-            })} */}
+            })}
           </Select>
-          <Button className="mt-[1rem] w-full">Reservasi seat</Button>
+          <Button
+            className="mt-[1rem] w-full"
+            isDisabled={!selectedEventId || !selectedTicketId}
+          >
+            Reservasi seat
+          </Button>
         </CardBody>
       </Card>
     </div>
