@@ -1,39 +1,57 @@
 package client
 
 import (
+	"context"
+
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
-type UserRepository interface {
-	Create(user Client) error
-	GetByID(id uuid.UUID) (Client, error)
-	Update(user Client) error
-	Delete(id uuid.UUID) error
+type Repository interface {
+	Create(ctx context.Context, user Client) (Client, error)
+	GetByID(ctx context.Context, id uuid.UUID) (Client, error)
+	Update(ctx context.Context, user Client) (Client, error)
+	Delete(ctx context.Context, id uuid.UUID) (Client, error)
 }
 
-type userRepository struct {
+type repository struct {
 	db *gorm.DB
 }
 
-func NewUserRepository(db *gorm.DB) UserRepository {
-	return &userRepository{db}
+func NewRepository(db *gorm.DB) Repository {
+	return &repository{db}
 }
 
-func (r *userRepository) Create(client Client) error {
-	return r.db.Create(client).Error
+func (r *repository) Create(ctx context.Context, client Client) (Client, error) {
+	err := r.db.WithContext(ctx).Create(&client).Error
+	if err != nil {
+		return Client{}, err
+	}
+	return client, nil
 }
 
-func (r *userRepository) GetByID(id uuid.UUID) (Client, error) {
+func (r *repository) GetByID(ctx context.Context, id uuid.UUID) (Client, error) {
 	var client Client
-	err := r.db.First(&client, "id = ?", id).Error
+	err := r.db.WithContext(ctx).First(&client, "id = ?", id).Error
 	return client, err
 }
 
-func (r *userRepository) Update(client Client) error {
-	return r.db.Save(client).Error
+func (r *repository) Update(ctx context.Context, client Client) (Client, error) {
+	err := r.db.WithContext(ctx).Save(&client).Error
+	if err != nil {
+		return Client{}, err
+	}
+	return client, nil
 }
 
-func (r *userRepository) Delete(id uuid.UUID) error {
-	return r.db.Delete(&Client{}, id).Error
+func (r *repository) Delete(ctx context.Context, id uuid.UUID) (Client, error) {
+	var client Client
+	err := r.db.WithContext(ctx).First(&client, "id = ?", id).Error
+	if err != nil {
+		return Client{}, err
+	}
+	if err = r.db.WithContext(ctx).Delete(&Client{}, id).Error; err != nil {
+		return Client{}, err
+	}
+	return client, nil
 }
