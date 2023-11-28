@@ -1,6 +1,7 @@
 import useSWR from "swr";
 import axios from "axios";
 import { z } from "zod";
+import { getToken } from "@/utils/getToken";
 
 const eventSchema = z.object({
   id: z.string().uuid(),
@@ -21,18 +22,6 @@ type EventResponse = {
 };
 
 export const useEvents = () => {
-  const getToken = () => {
-    const token = localStorage.getItem("token");
-    const stringSchema = z.string();
-
-    const parsedToken = stringSchema.safeParse(token);
-
-    if (!parsedToken.success) {
-      return "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiI4MzZmNzk3Ni05NjE1LTRlZjctYmI0MS1lZWExYTcwYTY0MWUiLCJyb2xlIjoiQURNSU4ifQ.u5PjsxY_elsV1ULP-bzKUC8AAZDlUCkearPYCPujWfg";
-    }
-    return parsedToken.data;
-  };
-
   const fetcher = (url: string) =>
     axios
       .get<EventResponse>(url, {

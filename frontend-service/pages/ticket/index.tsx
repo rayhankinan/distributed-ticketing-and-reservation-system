@@ -4,17 +4,45 @@ import { useEvents } from "@/hooks/use-events";
 import { useSeats } from "@/hooks/use-seats";
 import { useState, useEffect } from "react";
 import { seatStatuses } from "@/constants";
+import axios from "axios";
+import { getToken } from "@/utils/getToken";
 
 export default function Page() {
   const [selectedEventId, setSelectedEventId] = useState("");
-  const [selectedTicketId, setSelectedTicketId] = useState("");
+  const [selectedSeatId, setSelectedSeatId] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const { events } = useEvents();
   const { seats } = useSeats(selectedEventId);
 
   useEffect(() => {
-    setSelectedTicketId("");
+    setSelectedSeatId("");
   }, [selectedEventId]);
+
+  const onBookSeat = async () => {
+    try {
+      setIsLoading(true);
+
+      await axios.post(
+        `http://api.ticket-service.localhost/seat/reserve`,
+        {
+          id: selectedSeatId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+          },
+        }
+      );
+
+      setSelectedSeatId("");
+      setSelectedEventId("");
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="max-w-[1160px] mx-auto p-[1rem] py-[2rem] min-h-screen flex items-center">
@@ -40,10 +68,8 @@ export default function Page() {
               listbox: "dark",
               popoverContent: "dark",
             }}
-            value={selectedEventId}
-            onChange={(e) => {
-              setSelectedEventId(e.target.value);
-            }}
+            selectedKeys={[selectedEventId]}
+            onChange={(e) => setSelectedEventId(e.target.value)}
           >
             {events.map((e) => {
               return (
@@ -68,10 +94,8 @@ export default function Page() {
             }}
             isDisabled={!selectedEventId}
             placeholder={!selectedEventId ? "Pilih event terlebih dahulu" : ""}
-            value={selectedTicketId}
-            onChange={(e) => {
-              setSelectedTicketId(e.target.value);
-            }}
+            selectedKeys={[selectedSeatId]}
+            onChange={(e) => setSelectedSeatId(e.target.value)}
           >
             {seats
               .filter((s) => s.status === seatStatuses.open)
@@ -89,9 +113,10 @@ export default function Page() {
           </Select>
           <Button
             className="mt-[1rem] w-full"
-            isDisabled={!selectedEventId || !selectedTicketId}
+            isDisabled={!selectedEventId || !selectedSeatId || isLoading}
+            onClick={() => onBookSeat()}
           >
-            Reservasi seat
+            {isLoading ? "..." : "Reservasi seat"}
           </Button>
         </CardBody>
       </Card>
