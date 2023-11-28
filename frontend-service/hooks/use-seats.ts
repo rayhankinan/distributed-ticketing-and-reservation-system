@@ -2,14 +2,15 @@ import useSWR from "swr";
 import axios from "axios";
 import { z } from "zod";
 import { getToken } from "@/utils/getToken";
+import { SeatStatus } from "@/enum";
 
 const seatSchema = z.object({
   id: z.string().uuid(),
   eventId: z.string().uuid(),
   name: z.string(),
-  status: z.string(),
-  createdAt: z.string(),
-  updatedAt: z.string(),
+  status: z.nativeEnum(SeatStatus),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
 });
 
 type Seat = z.infer<typeof seatSchema>;

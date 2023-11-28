@@ -26,7 +26,7 @@ const app = new Elysia()
   .use(serverTiming())
   .use(
     cors({
-      origin: "*",
+      origin: true,
       methods: ["GET", "POST", "PUT", "DELETE"],
       allowedHeaders: ["Content-Type", "Authorization"],
     })

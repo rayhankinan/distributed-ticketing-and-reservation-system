@@ -1,12 +1,12 @@
+import { useState, useEffect } from "react";
 import { Divider, Button, Card, CardBody, CardHeader } from "@nextui-org/react";
 import { Select, SelectItem } from "@nextui-org/react";
+import axios from "axios";
+import { toast } from "sonner";
+import { SeatStatus } from "@/enum";
 import { useEvents } from "@/hooks/use-events";
 import { useSeats } from "@/hooks/use-seats";
-import { useState, useEffect } from "react";
-import { seatStatuses } from "@/constants";
-import axios from "axios";
 import { getToken } from "@/utils/getToken";
-import { toast } from "sonner";
 
 export default function Page() {
   const [selectedEventId, setSelectedEventId] = useState("");
@@ -101,7 +101,7 @@ export default function Page() {
             onChange={(e) => setSelectedSeatId(e.target.value)}
           >
             {seats
-              .filter((s) => s.status === seatStatuses.open)
+              .filter((s) => s.status === SeatStatus.OPEN)
               .map((s) => {
                 return (
                   <SelectItem
