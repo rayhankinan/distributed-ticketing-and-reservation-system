@@ -9,7 +9,7 @@ import (
 type Handle struct{}
 
 type SuccessResponse struct {
-	Data any `json:"data"`
+	Data interface{} `json:"data"`
 }
 
 type ErrorResponse struct {
