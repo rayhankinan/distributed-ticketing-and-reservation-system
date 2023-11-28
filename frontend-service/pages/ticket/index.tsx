@@ -1,15 +1,9 @@
-import {
-  Divider,
-  Button,
-  Card,
-  CardBody,
-  CardHeader,
-  select,
-} from "@nextui-org/react";
+import { Divider, Button, Card, CardBody, CardHeader } from "@nextui-org/react";
 import { Select, SelectItem } from "@nextui-org/react";
 import { useEvents } from "@/hooks/use-events";
 import { useSeats } from "@/hooks/use-seats";
 import { useState, useEffect } from "react";
+import { seatStatuses } from "@/constants";
 
 export default function Page() {
   const [selectedEventId, setSelectedEventId] = useState("");
@@ -79,17 +73,19 @@ export default function Page() {
               setSelectedTicketId(e.target.value);
             }}
           >
-            {seats.map((e) => {
-              return (
-                <SelectItem
-                  key={e.id}
-                  value={e.id}
-                  className="dark text-foreground"
-                >
-                  {e.name}
-                </SelectItem>
-              );
-            })}
+            {seats
+              .filter((s) => s.status === seatStatuses.open)
+              .map((s) => {
+                return (
+                  <SelectItem
+                    key={s.id}
+                    value={s.id}
+                    className="dark text-foreground"
+                  >
+                    {s.name}
+                  </SelectItem>
+                );
+              })}
           </Select>
           <Button
             className="mt-[1rem] w-full"
