@@ -1,4 +1,3 @@
-import { useAuth } from "@/hooks/use-auth";
 import { useAppSelector } from "@/redux/store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -8,7 +7,7 @@ import {
   CardFooter,
   CardHeader,
   Divider,
-  Input,
+  Input
 } from "@nextui-org/react";
 import axios from "axios";
 import Link from "next/link";

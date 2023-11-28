@@ -1,19 +1,15 @@
-import { useState, useEffect } from "react";
-import {
-  Divider,
-  Button,
-  Card,
-  CardBody,
-  CardHeader,
-  CardFooter,
-} from "@nextui-org/react";
-import { Select, SelectItem } from "@nextui-org/react";
-import axios from "axios";
-import { toast } from "sonner";
 import { SeatStatus } from "@/enum";
+import { useAuth } from "@/hooks/use-auth";
 import { useEvents } from "@/hooks/use-events";
 import { useSeats } from "@/hooks/use-seats";
-import { useAuth } from "@/hooks/use-auth";
+import {
+  Button,
+  Card,
+  CardBody, CardFooter, CardHeader, Divider, Select, SelectItem
+} from "@nextui-org/react";
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export default function Page() {
   const [selectedEventId, setSelectedEventId] = useState("");
