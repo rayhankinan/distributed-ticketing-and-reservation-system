@@ -1,8 +1,10 @@
-import { Divider, Button } from "@nextui-org/react";
-import { Card, CardHeader, CardBody } from "@nextui-org/react";
+import { useAuth } from "@/hooks/use-auth";
+import { Button, Card, CardBody, CardFooter, CardHeader, Divider } from "@nextui-org/react";
 import Link from "next/link";
 
 export default function Page() {
+  const { logOut } = useAuth();
+
   return (
     <div className="max-w-[1160px] mx-auto p-[1rem] min-h-screen flex items-center">
       <Card className="p-[1rem] w-full">
@@ -23,6 +25,10 @@ export default function Page() {
             </Link>
           </div>
         </CardBody>
+        <Divider className="my-[1rem]" />
+        <CardFooter>
+          <Button onClick={() => logOut()}>Log out</Button>
+        </CardFooter>
       </Card>
     </div>
   );

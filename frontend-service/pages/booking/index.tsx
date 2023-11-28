@@ -1,16 +1,18 @@
+import { useAuth } from "@/hooks/use-auth";
 import {
-  Divider,
+  Button, Card, CardBody, CardFooter, CardHeader, Divider,
   Table,
   TableBody,
   TableCell,
   TableColumn,
   TableHeader,
-  TableRow,
+  TableRow
 } from "@nextui-org/react";
-import { Card, CardHeader, CardBody } from "@nextui-org/react";
 import Link from "next/link";
 
 export default function Page() {
+  const { logOut } = useAuth();
+
   return (
     <div className="max-w-[1160px] mx-auto p-[1rem] min-h-screen flex items-center">
       <Card className="p-[1rem] w-full">
@@ -33,7 +35,9 @@ export default function Page() {
                 <TableCell>1</TableCell>
                 <TableCell>Berhasil</TableCell>
                 <TableCell>
-                  <Link href="https://www.google.com" className="text-primary">Unduh</Link>
+                  <Link href="https://www.google.com" className="text-primary">
+                    Unduh
+                  </Link>
                 </TableCell>
               </TableRow>
               <TableRow key="2">
@@ -54,6 +58,10 @@ export default function Page() {
             </TableBody>
           </Table>
         </CardBody>
+        <Divider className="my-[1rem]" />
+        <CardFooter>
+          <Button onClick={() => logOut()}>Log out</Button>
+        </CardFooter>
       </Card>
     </div>
   );

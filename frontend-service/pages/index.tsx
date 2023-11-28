@@ -1,12 +1,81 @@
-import { Input, Divider, Button, CardFooter } from "@nextui-org/react";
-import { Card, CardHeader, CardBody } from "@nextui-org/react";
+import { login } from "@/redux/slices/user";
+import { useAppDispatch, useAppSelector } from "@/redux/store";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Button,
+  Card,
+  CardBody,
+  CardFooter,
+  CardHeader,
+  Divider,
+  Input
+} from "@nextui-org/react";
+import axios from "axios";
 import Link from "next/link";
 
 import Router from "next/router";
+import { useEffect, useState } from "react";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
+
+const loginSchema = z.object({
+  username: z.string().min(1),
+  password: z.string().min(1),
+});
+
+type LoginSchemaType = z.infer<typeof loginSchema>;
 
 export default function Page() {
-  const handleLogIn = () => {
-    Router.push("/home");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const token = useAppSelector((state) => state.user.token);
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    if (token) {
+      Router.push("/home");
+    }
+  }, [token]);
+
+  const {
+    control,
+    handleSubmit,
+    formState: { isValid },
+  } = useForm<LoginSchemaType>({
+    resolver: zodResolver(loginSchema),
+    mode: "onChange",
+  });
+
+  const onLogin: SubmitHandler<LoginSchemaType> = async (data) => {
+    try {
+      setIsLoading(true);
+
+      const res = await axios.post(
+        `http://api.client-service.localhost/v1/client/login`,
+        {
+          username: data.username,
+          password: data.password,
+        }
+      );
+      const loginResponseSchema = z.object({
+        token: z.string(),
+      });
+      const loginResponse = loginResponseSchema.parse(res.data);
+
+      dispatch(login(loginResponse.token));
+
+      toast.success("Berhasil masuk ke dalam sistem!", {
+        duration: 2000,
+      });
+
+      Router.push("/");
+    } catch (error) {
+      console.log(error);
+      toast.error("Gagal melakukan login.", { duration: 2000 });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -21,12 +90,39 @@ export default function Page() {
         <Divider className="my-[1rem]" />
         <CardBody>
           <div className="flex flex-col gap-[1rem]">
-            <Input type="text" label="Username" placeholder="johndoe" />
-            <Input type="password" label="Password" />
+            <Controller
+              control={control}
+              name="username"
+              render={({ field: { onChange, value } }) => (
+                <Input
+                  type="text"
+                  label="Username"
+                  placeholder="johndoe"
+                  value={value}
+                  onValueChange={onChange}
+                  className="w-full"
+                />
+              )}
+            />
+            <Controller
+              control={control}
+              name="password"
+              render={({ field: { onChange, value } }) => (
+                <Input
+                  type="password"
+                  label="Password"
+                  value={value}
+                  onValueChange={onChange}
+                  className="w-full"
+                />
+              )}
+            />
             <Button
               onClick={() => {
-                handleLogIn();
+                handleSubmit(onLogin)();
               }}
+              isDisabled={!isValid || isLoading}
+              className="w-full"
             >
               Log in
             </Button>

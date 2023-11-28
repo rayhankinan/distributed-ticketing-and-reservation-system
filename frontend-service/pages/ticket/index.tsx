@@ -1,18 +1,22 @@
-import { useState, useEffect } from "react";
-import { Divider, Button, Card, CardBody, CardHeader } from "@nextui-org/react";
-import { Select, SelectItem } from "@nextui-org/react";
-import axios from "axios";
-import { toast } from "sonner";
 import { SeatStatus } from "@/enum";
+import { useAuth } from "@/hooks/use-auth";
 import { useEvents } from "@/hooks/use-events";
 import { useSeats } from "@/hooks/use-seats";
-import { getToken } from "@/utils/getToken";
+import {
+  Button,
+  Card,
+  CardBody, CardFooter, CardHeader, Divider, Select, SelectItem
+} from "@nextui-org/react";
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export default function Page() {
   const [selectedEventId, setSelectedEventId] = useState("");
   const [selectedSeatId, setSelectedSeatId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  const { logOut, token } = useAuth();
   const { events } = useEvents();
   const { seats } = useSeats(selectedEventId);
 
@@ -31,7 +35,7 @@ export default function Page() {
         },
         {
           headers: {
-            Authorization: `Bearer ${getToken()}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -122,6 +126,10 @@ export default function Page() {
             {isLoading ? "..." : "Reservasi seat"}
           </Button>
         </CardBody>
+        <Divider className="my-[1rem]" />
+        <CardFooter>
+          <Button onClick={() => logOut()}>Log out</Button>
+        </CardFooter>
       </Card>
     </div>
   );
