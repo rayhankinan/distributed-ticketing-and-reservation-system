@@ -1,3 +1,5 @@
+import { login } from "@/redux/slices/user";
+import { RootState, useAppDispatch, useAppSelector } from "@/redux/store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Button,
@@ -14,6 +16,7 @@ import Link from "next/link";
 import Router from "next/router";
 import { useState } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -27,6 +30,9 @@ type LoginSchemaType = z.infer<typeof loginSchema>;
 export default function Page() {
   const [isLoading, setIsLoading] = useState(false);
 
+  const token = useAppSelector((state) => state.user.token);
+  const dispatch = useAppDispatch();
+
   const {
     control,
     handleSubmit,
@@ -36,18 +42,23 @@ export default function Page() {
     mode: "onChange",
   });
 
-  const handleLogIn = () => {
-    Router.push("/home");
-  };
-
   const onLogin: SubmitHandler<LoginSchemaType> = async (data) => {
     try {
       setIsLoading(true);
 
-      await axios.post(`http://api.client-service.localhost/v1/client/login`, {
-        username: data.username,
-        password: data.password,
+      const res = await axios.post(
+        `http://api.client-service.localhost/v1/client/login`,
+        {
+          username: data.username,
+          password: data.password,
+        }
+      );
+      const loginResponseSchema = z.object({
+        token: z.string(),
       });
+      const loginResponse = loginResponseSchema.parse(res.data);
+
+      dispatch(login(loginResponse.token));
 
       toast.success("Berhasil masuk ke dalam sistem!", {
         duration: 2000,
