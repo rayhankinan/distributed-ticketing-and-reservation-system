@@ -141,3 +141,28 @@ func (h *Handle) UpdateUserHandler(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, handler.SuccessResponse{Data: res})
 }
+
+type LoginRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+func (h *Handle) LoginHandler(c echo.Context) error {
+	var req LoginRequest
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, handler.ErrorResponse{Message: "invalid content type"})
+	}
+
+	v := validator.New()
+	if err := v.Struct(req); err != nil {
+		return c.JSON(http.StatusBadRequest, handler.ErrorResponse{Message: "invalid request body"})
+	}
+
+	token, err := h.useCase.Login(req.Username, req.Password)
+	if err != nil {
+		h.logger.Error(err)
+		return c.JSON(http.StatusUnauthorized, handler.ErrorResponse{Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, map[string]string{"token": token})
+}

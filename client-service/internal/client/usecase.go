@@ -2,10 +2,13 @@ package client
 
 import (
 	"context"
+	"errors"
 
+	"client-service/internal/jwt"
 	"client-service/internal/security"
 
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type Usecase struct {
@@ -53,4 +56,22 @@ func (u *Usecase) Delete(ctx context.Context, id uuid.UUID) (Client, error) {
 		return Client{}, err
 	}
 	return deletedClient, nil
+}
+
+func (u *Usecase) Login(username, password string) (string, error) {
+	user, err := u.repo.FindByUsername(username)
+	if err != nil {
+		return "", err
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+		return "", errors.New("invalid credentials")
+	}
+
+	token, err := jwt.GenerateJWT(user.ID, user.Role)
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
 }
