@@ -62,7 +62,7 @@ func (h *Handle) CreateTicketHandler(c echo.Context) error {
 }
 
 func (h *Handle) GetTicketHandler(c echo.Context) error {
-	paramId := c.QueryParam("id")
+	paramId := c.Param("id")
 	id, err := uuid.Parse(paramId)
 	if err != nil {
 		h.logger.Error(err)
@@ -88,7 +88,7 @@ func (h *Handle) UpdateTicketHandler(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, handler.ErrorResponse{Message: "Invalid content type"})
 	}
 
-	paramId := c.QueryParam("id")
+	paramId := c.Param("id")
 	id, err := uuid.Parse(paramId)
 	if err != nil {
 		h.logger.Error(err)
@@ -111,7 +111,7 @@ func (h *Handle) UpdateTicketHandler(c echo.Context) error {
 }
 
 func (h *Handle) DeleteTicketHandler(c echo.Context) error {
-	paramId := c.QueryParam("id")
+	paramId := c.Param("id")
 	id, err := uuid.Parse(paramId)
 	if err != nil {
 		h.logger.Error(err)

@@ -17,8 +17,8 @@ type Handle struct {
 }
 
 type CreateUserRequest struct {
-	Username string `json:"username" validate:"required, printascii"`
-	Password string `json:"password" validate:"required, printascii"`
+	Username string `json:"username" validate:"required,printascii"`
+	Password string `json:"password" validate:"required,printascii"`
 }
 
 type UpdateUserRequest struct {
@@ -65,7 +65,7 @@ func (h *Handle) CreateUserHandler(c echo.Context) error {
 }
 
 func (h *Handle) GetUserHandler(c echo.Context) error {
-	paramId := c.QueryParam("id")
+	paramId := c.Param("id")
 	id, err := uuid.Parse(paramId)
 	if err != nil {
 		h.logger.Error(err)
@@ -83,7 +83,7 @@ func (h *Handle) GetUserHandler(c echo.Context) error {
 }
 
 func (h *Handle) DeleteUserHandler(c echo.Context) error {
-	paramId := c.QueryParam("id")
+	paramId := c.Param("id")
 	id, err := uuid.Parse(paramId)
 	if err != nil {
 		h.logger.Error(err)
@@ -125,7 +125,7 @@ func (h *Handle) UpdateUserHandler(c echo.Context) error {
 		Password: req.Password,
 	}
 
-	paramId := c.QueryParam("id")
+	paramId := c.Param("id")
 	id, err := uuid.Parse(paramId)
 	if err != nil {
 		h.logger.Error(err)
