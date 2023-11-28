@@ -96,7 +96,6 @@ export default function Page() {
                 />
               )}
             />
-
             <Button
               onClick={() => {
                 handleSubmit(onRegister)();
