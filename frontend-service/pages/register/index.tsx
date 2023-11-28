@@ -5,7 +5,7 @@ import Link from "next/link";
 import Router from "next/router";
 
 export default function Page() {
-  const handleLogIn = () => {
+  const handleRegister = () => {
     Router.push("/home");
   };
 
@@ -16,7 +16,7 @@ export default function Page() {
           <h1 className="font-bold text-[2rem]">
             Pemesanan Tiket Terdistribusi
           </h1>
-          <p>Masuk ke dalam aplikasi untuk melakukan pemesanan tiket!</p>
+          <p>Buat akun terlebih dahulu untuk melakukan pemesanan tiket!</p>
         </CardHeader>
         <Divider className="my-[1rem]" />
         <CardBody>
@@ -25,18 +25,18 @@ export default function Page() {
             <Input type="password" label="Password" />
             <Button
               onClick={() => {
-                handleLogIn();
+                handleRegister();
               }}
             >
-              Log in
+              Buat akun
             </Button>
           </div>
         </CardBody>
         <CardFooter>
           <p>
-            Belum punya akun?{" "}
-            <Link className="text-primary" href="/register">
-              Buat akun
+            Sudah punya akun?{" "}
+            <Link className="text-primary" href="/">
+              Log in
             </Link>
           </p>
         </CardFooter>
