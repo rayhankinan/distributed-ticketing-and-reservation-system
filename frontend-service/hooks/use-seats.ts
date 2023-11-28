@@ -1,8 +1,8 @@
-import useSWR from "swr";
-import axios from "axios";
-import { z } from "zod";
-import { getToken } from "@/utils/getToken";
 import { SeatStatus } from "@/enum";
+import { useAppSelector } from "@/redux/store";
+import axios from "axios";
+import useSWR from "swr";
+import { z } from "zod";
 
 const seatSchema = z.object({
   id: z.string().uuid(),
@@ -20,11 +20,13 @@ type SeatResponse = {
 };
 
 export const useSeats = (eventId: string) => {
+  const token = useAppSelector((state) => state.user.token);
+
   const fetcher = (url: string) =>
     axios
       .get<SeatResponse>(url, {
         headers: {
-          Authorization: `Bearer ${getToken()}`,
+          Authorization: `Bearer ${token}`,
         },
       })
       .then((res) => res.data);

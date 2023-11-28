@@ -18,5 +18,5 @@ export const useAuth = () => {
     Router.push("/");
   };
 
-  return { logOut };
+  return { logOut, token };
 };

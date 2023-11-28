@@ -1,7 +1,7 @@
-import useSWR from "swr";
+import { useAppSelector } from "@/redux/store";
 import axios from "axios";
+import useSWR from "swr";
 import { z } from "zod";
-import { getToken } from "@/utils/getToken";
 
 const eventSchema = z.object({
   id: z.string().uuid(),
@@ -9,10 +9,10 @@ const eventSchema = z.object({
   lineup: z.array(z.string()),
   description: z.string().nullable(),
   homepage: z.string().nullable(),
-  startTime: z.string(),
-  endTime: z.string(),
-  createdAt: z.string(),
-  updatedAt: z.string(),
+  startTime: z.coerce.date(),
+  endTime: z.coerce.date(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
 });
 
 type Event = z.infer<typeof eventSchema>;
@@ -22,11 +22,13 @@ type EventResponse = {
 };
 
 export const useEvents = () => {
+  const token = useAppSelector((state) => state.user.token);
+
   const fetcher = (url: string) =>
     axios
       .get<EventResponse>(url, {
         headers: {
-          Authorization: `Bearer ${getToken()}`,
+          Authorization: `Bearer ${token}`,
         },
       })
       .then((res) => res.data);
