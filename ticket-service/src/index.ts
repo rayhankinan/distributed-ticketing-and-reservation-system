@@ -426,17 +426,6 @@ const app = new Elysia()
                   };
                 }
 
-                // If queue length is more than 0, then immediately return
-                if (metadata.queueLength > 0) {
-                  set.status = status;
-
-                  return {
-                    data,
-                    metadata,
-                    message,
-                  };
-                }
-
                 // Call payment service for payment
                 await axiosPaymentInstance.post("/invoice", body);
 
