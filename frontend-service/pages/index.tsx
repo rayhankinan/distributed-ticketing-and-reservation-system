@@ -1,10 +1,20 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Input, Divider, Button, CardFooter } from "@nextui-org/react";
-import { Card, CardHeader, CardBody } from "@nextui-org/react";
+import {
+  Button,
+  Card,
+  CardBody,
+  CardFooter,
+  CardHeader,
+  Divider,
+  Input,
+} from "@nextui-org/react";
+import axios from "axios";
 import Link from "next/link";
 
 import Router from "next/router";
-import { Controller, useForm } from "react-hook-form";
+import { useState } from "react";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
 const loginSchema = z.object({
@@ -15,6 +25,8 @@ const loginSchema = z.object({
 type LoginSchemaType = z.infer<typeof loginSchema>;
 
 export default function Page() {
+  const [isLoading, setIsLoading] = useState(false);
+
   const {
     control,
     handleSubmit,
@@ -26,6 +38,28 @@ export default function Page() {
 
   const handleLogIn = () => {
     Router.push("/home");
+  };
+
+  const onLogin: SubmitHandler<LoginSchemaType> = async (data) => {
+    try {
+      setIsLoading(true);
+
+      await axios.post(`http://api.client-service.localhost/v1/client/login`, {
+        username: data.username,
+        password: data.password,
+      });
+
+      toast.success("Berhasil masuk ke dalam sistem!", {
+        duration: 2000,
+      });
+
+      Router.push("/");
+    } catch (error) {
+      console.log(error);
+      toast.error("Gagal melakukan login.", { duration: 2000 });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -69,9 +103,9 @@ export default function Page() {
             />
             <Button
               onClick={() => {
-                handleLogIn();
+                handleSubmit(onLogin)();
               }}
-              isDisabled={!isValid}
+              isDisabled={!isValid || isLoading}
               className="w-full"
             >
               Log in
