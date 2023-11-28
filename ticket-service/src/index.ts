@@ -12,6 +12,15 @@ import { createHmac } from "crypto";
 import { Role, TicketStatus } from "./enum";
 
 const app = new Elysia()
+  .onError(({ set }) => {
+    set.status = StatusCodes.INTERNAL_SERVER_ERROR;
+
+    return {
+      data: null,
+      metadata: null,
+      message: ReasonPhrases.INTERNAL_SERVER_ERROR,
+    };
+  })
   .use(
     jwt({
       secret: "dhika-jelek",
@@ -24,7 +33,13 @@ const app = new Elysia()
   )
   .use(bearer())
   .use(serverTiming())
-  .use(cors())
+  .use(
+    cors({
+      origin: true,
+      methods: ["GET", "POST", "PUT", "DELETE"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+    })
+  )
   .derive(async ({ jwt, bearer }) => {
     const payload = await jwt.verify(bearer);
 

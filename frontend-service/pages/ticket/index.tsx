@@ -1,37 +1,52 @@
+import { useState, useEffect } from "react";
 import { Divider, Button, Card, CardBody, CardHeader } from "@nextui-org/react";
 import { Select, SelectItem } from "@nextui-org/react";
-
-const dummyEvents = [
-  {
-    id: 1,
-    name: "Coldplay",
-  },
-  {
-    id: 2,
-    name: "YOASOBI",
-  },
-  {
-    id: 3,
-    name: "Eve",
-  },
-];
-
-const dummySeats = [
-  {
-    id: 1,
-    name: "A1",
-  },
-  {
-    id: 2,
-    name: "A2",
-  },
-  {
-    id: 3,
-    name: "A3",
-  },
-];
+import axios from "axios";
+import { toast } from "sonner";
+import { SeatStatus } from "@/enum";
+import { useEvents } from "@/hooks/use-events";
+import { useSeats } from "@/hooks/use-seats";
+import { getToken } from "@/utils/getToken";
 
 export default function Page() {
+  const [selectedEventId, setSelectedEventId] = useState("");
+  const [selectedSeatId, setSelectedSeatId] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const { events } = useEvents();
+  const { seats } = useSeats(selectedEventId);
+
+  useEffect(() => {
+    setSelectedSeatId("");
+  }, [selectedEventId]);
+
+  const onBookSeat = async () => {
+    try {
+      setIsLoading(true);
+
+      await axios.post(
+        `http://api.ticket-service.localhost/seat/reserve`,
+        {
+          id: selectedSeatId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+          },
+        }
+      );
+
+      setSelectedSeatId("");
+      setSelectedEventId("");
+
+      toast.success("Berhasil melakukan booking seat!", { duration: 2000 });
+    } catch (error) {
+      toast.error("Gagal melakukan booking seat.", { duration: 2000 });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="max-w-[1160px] mx-auto p-[1rem] py-[2rem] min-h-screen flex items-center">
       <Card className="p-[1rem] w-full">
@@ -56,8 +71,10 @@ export default function Page() {
               listbox: "dark",
               popoverContent: "dark",
             }}
+            selectedKeys={[selectedEventId]}
+            onChange={(e) => setSelectedEventId(e.target.value)}
           >
-            {dummyEvents.map((e) => {
+            {events.map((e) => {
               return (
                 <SelectItem
                   key={e.id}
@@ -78,20 +95,32 @@ export default function Page() {
               listbox: "dark",
               popoverContent: "dark",
             }}
+            isDisabled={!selectedEventId}
+            placeholder={!selectedEventId ? "Pilih event terlebih dahulu" : ""}
+            selectedKeys={[selectedSeatId]}
+            onChange={(e) => setSelectedSeatId(e.target.value)}
           >
-            {dummySeats.map((e) => {
-              return (
-                <SelectItem
-                  key={e.id}
-                  value={e.id}
-                  className="dark text-foreground"
-                >
-                  {e.name}
-                </SelectItem>
-              );
-            })}
+            {seats
+              .filter((s) => s.status === SeatStatus.OPEN)
+              .map((s) => {
+                return (
+                  <SelectItem
+                    key={s.id}
+                    value={s.id}
+                    className="dark text-foreground"
+                  >
+                    {s.name}
+                  </SelectItem>
+                );
+              })}
           </Select>
-          <Button className="mt-[1rem] w-full">Reservasi seat</Button>
+          <Button
+            className="mt-[1rem] w-full"
+            isDisabled={!selectedEventId || !selectedSeatId || isLoading}
+            onClick={() => onBookSeat()}
+          >
+            {isLoading ? "..." : "Reservasi seat"}
+          </Button>
         </CardBody>
       </Card>
     </div>
