@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { seatStatuses } from "@/constants";
 import axios from "axios";
 import { getToken } from "@/utils/getToken";
+import { toast } from "sonner";
 
 export default function Page() {
   const [selectedEventId, setSelectedEventId] = useState("");
@@ -37,8 +38,10 @@ export default function Page() {
 
       setSelectedSeatId("");
       setSelectedEventId("");
+
+      toast.success("Berhasil melakukan booking seat!", { duration: 2000 });
     } catch (error) {
-      console.log(error);
+      toast.error("Gagal melakukan booking seat.", { duration: 2000 });
     } finally {
       setIsLoading(false);
     }
