@@ -111,7 +111,7 @@ func (h *Handle) CreateTicketHandler(c echo.Context) error {
 	reserveReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
 	client := &http.Client{}
-	reserveResp, err := client.Do(reserveReq)
+	reserveResp, err := client.Do(reserveReq) // NOTE: An error is returned if caused by client policy (such as CheckRedirect), or failure to speak HTTP (such as a network connectivity problem). A non-2xx status code doesn't cause an error.
 	if err != nil {
 		h.logger.Error(err)
 		return c.JSON(http.StatusInternalServerError, handler.ErrorResponse{Message: "Failed to send reserve request"})
