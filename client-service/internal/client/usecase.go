@@ -63,8 +63,8 @@ func (u *Usecase) Delete(ctx context.Context, id uuid.UUID) (Client, error) {
 	return deletedClient, nil
 }
 
-func (u *Usecase) Login(username, password string) (string, error) {
-	user, err := u.repo.FindByUsername(username)
+func (u *Usecase) Login(ctx context.Context, username, password string) (string, error) {
+	user, err := u.repo.FindByUsername(ctx, username)
 	if err != nil {
 		return "", err
 	}

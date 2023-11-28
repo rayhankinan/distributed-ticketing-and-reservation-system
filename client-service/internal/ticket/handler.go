@@ -3,6 +3,7 @@ package ticket
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -21,10 +22,7 @@ type Handle struct {
 }
 
 type CreateTicketRequest struct {
-	UID    uuid.UUID    `json:"uid" validate:"required"`
-	SeatID uuid.UUID    `json:"seat_id" validate:"required"`
-	Status TicketStatus `json:"status"`
-	Link   string       `json:"link"`
+	SeatID uuid.UUID `json:"seat_id" validate:"required"`
 }
 
 type UpdateTicketRequest struct {
@@ -65,12 +63,23 @@ func (h *Handle) CreateTicketHandler(c echo.Context) error {
 	}
 
 	token := headerParts[1]
+	parsedUID, err := jwt.GetUserIDFromJWT(token)
+	if err != nil {
+		h.logger.Error(err)
+		return c.JSON(http.StatusBadRequest, handler.ErrorResponse{Message: "Invalid ID"})
+	}
+
+	UID, err := uuid.Parse(parsedUID)
+	if err != nil {
+		h.logger.Error(err)
+		return c.JSON(http.StatusBadRequest, handler.ErrorResponse{Message: "Invalid ID"})
+	}
 
 	ticket := Ticket{
-		UID:    req.UID,
-		Status: req.Status,
-		Link:   req.Link,
+		UID:    UID,
 		SeatID: req.SeatID,
+		Status: OnGoing,
+		Link:   "",
 	}
 
 	res, err := h.ticketUsecase.Create(ctx, ticket)
@@ -99,7 +108,7 @@ func (h *Handle) CreateTicketHandler(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, handler.ErrorResponse{Message: "Failed to create reserve request"})
 	}
 	reserveReq.Header.Set("Content-Type", "application/json")
-	reserveReq.Header.Set("Authorization", "Bearer "+token)
+	reserveReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
 	client := &http.Client{}
 	reserveResp, err := client.Do(reserveReq)
@@ -108,6 +117,8 @@ func (h *Handle) CreateTicketHandler(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, handler.ErrorResponse{Message: "Failed to send reserve request"})
 	}
 	defer reserveResp.Body.Close()
+
+	// TODO: Handle if the status code is not 200
 
 	return c.JSON(http.StatusCreated, handler.SuccessResponse{Data: res})
 }

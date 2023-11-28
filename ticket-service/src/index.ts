@@ -12,7 +12,9 @@ import { createHmac } from "crypto";
 import { Role, TicketStatus } from "./enum";
 
 const app = new Elysia()
-  .onError(({ set }) => {
+  .onError(({ set, error }) => {
+    console.log(error.message);
+
     set.status = StatusCodes.INTERNAL_SERVER_ERROR;
 
     return {
@@ -47,18 +49,7 @@ const app = new Elysia()
       payload,
     };
   })
-  .derive(({ bearer }) => {
-    const axiosPaymentInstance = axios.create({
-      baseURL: "http://api.payment-service.docker-compose:3002",
-      headers: {
-        Authorization: `Bearer ${bearer}`,
-      },
-    });
 
-    return {
-      axiosPaymentInstance,
-    };
-  })
   .derive(({ bearer }) => {
     const axiosTicketInstance = axios.create({
       baseURL: "http://api.ticket-service.docker-compose:3000",
@@ -69,6 +60,30 @@ const app = new Elysia()
 
     return {
       axiosTicketInstance,
+    };
+  })
+  .derive(({ bearer }) => {
+    const axiosClientInstance = axios.create({
+      baseURL: "http://api.client-service.docker-compose:3001",
+      headers: {
+        Authorization: `Bearer ${bearer}`,
+      },
+    });
+
+    return {
+      axiosClientInstance,
+    };
+  })
+  .derive(({ bearer }) => {
+    const axiosPaymentInstance = axios.create({
+      baseURL: "http://api.payment-service.docker-compose:3002",
+      headers: {
+        Authorization: `Bearer ${bearer}`,
+      },
+    });
+
+    return {
+      axiosPaymentInstance,
     };
   })
   .derive(async () => {
@@ -324,7 +339,7 @@ const app = new Elysia()
                 redis,
                 axiosPaymentInstance,
               }) => {
-                const isFailed = Math.random() < 0; // NOTE: Replace with 0.2 if system is stable
+                const isFailed = Math.random() < 0; // TODO: Replace with 0.2 if system is stable
 
                 if (isFailed) {
                   set.status = StatusCodes.INTERNAL_SERVER_ERROR;
@@ -400,6 +415,16 @@ const app = new Elysia()
                       message: ReasonPhrases.CREATED,
                     };
                   });
+
+                if (!data) {
+                  set.status = status;
+
+                  return {
+                    data,
+                    metadata,
+                    message,
+                  };
+                }
 
                 // If queue length is more than 0, then immediately return
                 if (metadata.queueLength > 0) {
@@ -486,6 +511,16 @@ const app = new Elysia()
                     };
                   });
 
+                if (!data) {
+                  set.status = status;
+
+                  return {
+                    data,
+                    metadata,
+                    message,
+                  };
+                }
+
                 // Call payment service to refund the payment
                 await axiosPaymentInstance.post("/refund", body);
 
@@ -505,7 +540,7 @@ const app = new Elysia()
             )
             .post(
               "/webhook-success",
-              async ({ set, body, payload, db }) => {
+              async ({ set, body, payload, db, axiosClientInstance }) => {
                 if (!payload) {
                   set.status = StatusCodes.FORBIDDEN;
 
@@ -559,6 +594,16 @@ const app = new Elysia()
                     };
                   });
 
+                if (!data) {
+                  set.status = status;
+
+                  return {
+                    data,
+                    metadata,
+                    message,
+                  };
+                }
+
                 // Call client service to notify user that the ticket is ready
                 const pdfData = Buffer.from(
                   JSON.stringify({
@@ -578,7 +623,13 @@ const app = new Elysia()
                 rawURL.searchParams.append("hash", pdfHash);
 
                 const url = rawURL.toString();
-                console.log(url); // TODO: Remove this and replace with client service
+
+                // Call ticket service to notify user that the ticket is ready
+                await axiosClientInstance.patch("/v1/ticket/webhook", {
+                  seat_id: body.id,
+                  status: TicketStatus.SUCCESS,
+                  link: url,
+                });
 
                 set.status = status;
 
@@ -604,6 +655,7 @@ const app = new Elysia()
                 db,
                 redis,
                 axiosTicketInstance,
+                axiosClientInstance,
               }) => {
                 if (!payload) {
                   set.status = StatusCodes.FORBIDDEN;
@@ -659,6 +711,16 @@ const app = new Elysia()
                     };
                   });
 
+                if (!data) {
+                  set.status = status;
+
+                  return {
+                    data,
+                    metadata,
+                    message,
+                  };
+                }
+
                 // Call client service to notify user that the ticket is refunded
                 const pdfData = Buffer.from(
                   JSON.stringify({
@@ -678,7 +740,13 @@ const app = new Elysia()
                 rawURL.searchParams.append("hash", pdfHash);
 
                 const url = rawURL.toString();
-                console.log(url); // TODO: Remove this and replace with client service
+
+                // Call ticket service to notify user that the ticket is refunded
+                await axiosClientInstance.patch("/v1/ticket/webhook", {
+                  seat_id: body.id,
+                  status: TicketStatus.REFUNDED,
+                  link: url,
+                });
 
                 // Call ticket service for new reservation from queue
                 const userId = await redis.rPop(`queue:${body.id}`);
@@ -728,6 +796,7 @@ const app = new Elysia()
                 db,
                 redis,
                 axiosTicketInstance,
+                axiosClientInstance,
               }) => {
                 if (!payload) {
                   set.status = StatusCodes.FORBIDDEN;
@@ -783,6 +852,16 @@ const app = new Elysia()
                     };
                   });
 
+                if (!data) {
+                  set.status = status;
+
+                  return {
+                    data,
+                    metadata,
+                    message,
+                  };
+                }
+
                 // Call client service to notify user that the ticket failed to be booked
                 const pdfData = Buffer.from(
                   JSON.stringify({
@@ -802,7 +881,13 @@ const app = new Elysia()
                 rawURL.searchParams.append("hash", pdfHash);
 
                 const url = rawURL.toString();
-                console.log(url); // TODO: Remove this and replace with client service
+
+                // Call ticket service to notify user that the ticket failed to be booked
+                await axiosClientInstance.patch("/v1/ticket/webhook", {
+                  seat_id: body.id,
+                  status: TicketStatus.FAILED,
+                  link: url,
+                });
 
                 // Call ticket service for new reservation from queue
                 const userId = await redis.rPop(`queue:${body.id}`);

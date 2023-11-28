@@ -19,7 +19,7 @@ export const tryToProcessRefund = async (invoiceId: string) => {
 };
 
 const processRefund = async (invoiceId: string) => {
-  const isFailed = Math.random() < 0; // NOTE: Replace with 0.1 if system is stable
+  const isFailed = Math.random() < 0; // TODO: Replace with 0.1 if system is stable
 
   const targetStatus = isFailed ? PaymentStatus.FAILED : PaymentStatus.REFUNDED;
 

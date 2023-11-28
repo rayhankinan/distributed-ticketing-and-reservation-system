@@ -60,14 +60,14 @@ func (r *repository) Delete(ctx context.Context, id uuid.UUID) (Ticket, error) {
 func (r *repository) UpdateByUserID(ctx context.Context, userID uuid.UUID, updatedTicket Ticket) (Ticket, error) {
 	var ticket Ticket
 
-	if err := r.db.Where("uid = ? AND status = ?", userID, OnGoing).First(&ticket).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("uid = ? AND status = ?", userID, OnGoing).First(&ticket).Error; err != nil {
 		return Ticket{}, err
 	}
 
 	ticket.Status = updatedTicket.Status
 	ticket.Link = updatedTicket.Link
 
-	if err := r.db.Save(&ticket).Error; err != nil {
+	if err := r.db.WithContext(ctx).Save(&ticket).Error; err != nil {
 		return Ticket{}, err
 	}
 

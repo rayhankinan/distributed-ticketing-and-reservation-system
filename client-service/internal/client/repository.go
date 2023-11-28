@@ -12,7 +12,7 @@ type Repository interface {
 	GetByID(ctx context.Context, id uuid.UUID) (Client, error)
 	Update(ctx context.Context, user Client) (Client, error)
 	Delete(ctx context.Context, id uuid.UUID) (Client, error)
-	FindByUsername(username string) (Client, error)
+	FindByUsername(ctx context.Context, username string) (Client, error)
 }
 
 type repository struct {
@@ -57,9 +57,9 @@ func (r *repository) Delete(ctx context.Context, id uuid.UUID) (Client, error) {
 	return client, nil
 }
 
-func (r *repository) FindByUsername(username string) (Client, error) {
+func (r *repository) FindByUsername(ctx context.Context, username string) (Client, error) {
 	var client Client
-	err := r.db.Where("username = ?", username).First(&client).Error
+	err := r.db.WithContext(ctx).Where("username = ?", username).First(&client).Error
 	if err != nil {
 		return Client{}, err
 	}
