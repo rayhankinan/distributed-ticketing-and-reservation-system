@@ -4,7 +4,6 @@ import * as jose from "npm:jose";
 
 import { mongoClient } from "../mongo/index.ts";
 import { PaymentStatus, WebhookRoutes } from "../enum/index.ts";
-import { publishMessage } from "../redis/publish.ts";
 import { invoiceSchema } from "../schema/process-invoice.ts";
 
 export const tryToProcessInvoice = async (invoiceId: string) => {
@@ -12,9 +11,6 @@ export const tryToProcessInvoice = async (invoiceId: string) => {
     await processInvoice(invoiceId);
   } catch (error) {
     console.log(`>> Failed processing invoice ID ${invoiceId}: ${error}`);
-
-    // Put back to queue
-    await publishMessage("payment", invoiceId);
   }
 };
 
