@@ -46,6 +46,11 @@ func (u *Usecase) Delete(ctx context.Context, id uuid.UUID) (Ticket, error) {
 	return deletedTicket, nil
 }
 
+func (u *Usecase) GetByIdAndUserId(ctx context.Context, ticketId uuid.UUID, userId uuid.UUID) (Ticket, error) {
+	ticket, err := u.repo.GetByIdAndUserId(ctx, ticketId, userId)
+	return ticket, err
+}
+
 func (u *Usecase) UpdateByUserID(ctx context.Context, userID uuid.UUID, ticket Ticket) (Ticket, error) {
 	updatedTicket, err := u.repo.UpdateByUserID(ctx, userID, ticket)
 	if err != nil {

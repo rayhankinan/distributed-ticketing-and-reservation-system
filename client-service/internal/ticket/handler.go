@@ -209,6 +209,82 @@ func (h *Handle) DeleteTicketHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, handler.SuccessResponse{Data: res})
 }
 
+func (h *Handle) RefundTicketHandler(c echo.Context) error {
+	paramId := c.Param("id")
+	ticketId, err := uuid.Parse(paramId)
+	if err != nil {
+		h.logger.Error(err)
+		return c.JSON(http.StatusBadRequest, handler.ErrorResponse{Message: "Invalid ID"})
+	}
+
+	ctx := c.Request().Context()
+
+	authHeader := c.Request().Header.Get("Authorization")
+	if authHeader == "" {
+		h.logger.Error("Unauthorized")
+		return c.JSON(http.StatusUnauthorized, handler.ErrorResponse{Message: "Unauthorized"})
+	}
+
+	headerParts := strings.Split(authHeader, " ")
+	if len(headerParts) != 2 {
+		h.logger.Error("Unauthorized")
+		return c.JSON(http.StatusUnauthorized, handler.ErrorResponse{Message: "Unauthorized"})
+	}
+
+	token := headerParts[1]
+	parsedUID, err := jwt.GetUserIDFromJWT(token)
+	if err != nil {
+		h.logger.Error(err)
+		return c.JSON(http.StatusBadRequest, handler.ErrorResponse{Message: "Invalid ID"})
+	}
+
+	UID, err := uuid.Parse(parsedUID)
+	if err != nil {
+		h.logger.Error(err)
+		return c.JSON(http.StatusBadRequest, handler.ErrorResponse{Message: "Invalid ID"})
+	}
+
+	ticket, err := h.ticketUsecase.GetByIdAndUserId(ctx, ticketId, UID)
+	if err != nil {
+		h.logger.Error(err)
+		return c.JSON(http.StatusUnauthorized, handler.ErrorResponse{Message: "Unauthorized"})
+	}
+
+	jsonBody, _ := json.Marshal(
+		map[string]uuid.UUID{
+			"id": ticket.SeatID,
+		},
+	)
+	bodyReader := bytes.NewReader(jsonBody)
+
+	if err != nil {
+		h.logger.Error(err)
+		return c.JSON(http.StatusInternalServerError, handler.ErrorResponse{Message: "Failed to marshal reserve payload"})
+	}
+
+	url := "http://api.ticket-service.docker-compose:3000/seat/cancel"
+
+	reserveReq, err := http.NewRequest("POST", url, bodyReader)
+	if err != nil {
+		h.logger.Error(err)
+		return c.JSON(http.StatusInternalServerError, handler.ErrorResponse{Message: "Failed to create cancel request"})
+	}
+	reserveReq.Header.Set("Content-Type", "application/json")
+	reserveReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+
+	client := &http.Client{}
+	reserveResp, err := client.Do(reserveReq) // NOTE: An error is returned if caused by client policy (such as CheckRedirect), or failure to speak HTTP (such as a network connectivity problem). A non-2xx status code doesn't cause an error.
+	if err != nil {
+		h.logger.Error(err)
+		return c.JSON(http.StatusInternalServerError, handler.ErrorResponse{Message: "Failed to send reserve request"})
+	}
+	defer reserveResp.Body.Close()
+
+	// TODO: Handle if the status code is not 200
+
+	return c.JSON(http.StatusCreated, handler.SuccessResponse{Data: ticket})
+}
+
 func (h *Handle) UpdateTicketByUserIDHandler(c echo.Context) error {
 	var req UpdateTicketRequest
 	ctx := c.Request().Context()
