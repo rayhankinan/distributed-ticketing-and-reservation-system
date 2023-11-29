@@ -112,19 +112,17 @@ export default function Page() {
             selectedKeys={[selectedSeatId]}
             onChange={(e) => setSelectedSeatId(e.target.value)}
           >
-            {seats
-              .filter((s) => s.status === SeatStatus.OPEN)
-              .map((s) => {
-                return (
-                  <SelectItem
-                    key={s.id}
-                    value={s.id}
-                    className="dark text-foreground"
-                  >
-                    {s.name}
-                  </SelectItem>
-                );
-              })}
+            {seats.map((s) => {
+              return (
+                <SelectItem
+                  key={s.id}
+                  value={s.id}
+                  className="dark text-foreground"
+                >
+                  {s.name}
+                </SelectItem>
+              );
+            })}
           </Select>
           <Button
             className="mt-[1rem] w-full"
