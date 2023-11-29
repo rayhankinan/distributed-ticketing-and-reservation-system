@@ -1,4 +1,32 @@
-# distributed-ticketing-and-reservation-system
-Tugas Besar IF4031 Pengembangan Aplikasi Terdistribusi
+# Tugas Besar PAT 2023/2024
 
-![image](https://github.com/rayhankinan/distributed-ticketing-and-reservation-system/assets/29671825/8b6301ea-ad2c-4824-8b0e-4a914f3b0dfc)
+
+NIM | Nama
+--- | --- 
+13520065 | Rayhan Kinan Muhannad
+13520081 | Andhika Arta Aryanto
+13520119 | Marchotridyo
+
+---
+
+## Client App
+System Entity | Tech
+--- | --- 
+API Server | Golang dengan Echo Framework
+Database | PostgreSQL
+
+
+## Ticket App
+System Entity | Tech
+--- | --- 
+API Server | Bun.JS dengan Elysia
+Database | PostgreSQL
+Queue Reservasi | Redis
+PDF Generator | Next.JS
+
+## Payment App
+System Entity | Tech
+--- | --- 
+API Server | Deno.JS dengan Express
+Database | MongoDB
+Message Queue | Redis Pubsub
