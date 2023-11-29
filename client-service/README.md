@@ -30,3 +30,5 @@ The body and header for all APIs can be seen in the Postman collection inside `c
 From the root of this repository, run `docker-compose up`.
 
 To run the migration, make sure `go` is installed. Then, simply do `make migrate-up`
+
+_make sure that the client-database container is already running_
