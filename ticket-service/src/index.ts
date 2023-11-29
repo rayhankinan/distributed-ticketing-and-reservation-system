@@ -902,6 +902,7 @@ const app = new Elysia()
                     userId: payload.userId,
                     seatId: data.id,
                     status: TicketStatus.FAILED,
+                    failedReason: "Payment service failed",
                   })
                 ).toString("base64url");
 
