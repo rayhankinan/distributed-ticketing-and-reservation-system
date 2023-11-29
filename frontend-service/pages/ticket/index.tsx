@@ -119,7 +119,7 @@ export default function Page() {
                   value={s.id}
                   className="dark text-foreground"
                 >
-                  {s.name}
+                  {s.name} {s.status !== SeatStatus.OPEN && "(Mengantri)"}
                 </SelectItem>
               );
             })}
