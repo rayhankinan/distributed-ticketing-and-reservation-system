@@ -344,5 +344,7 @@ func (h *Handle) UpdateTicketByUserIDHandler(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, handler.ErrorResponse{Message: err.Error()})
 	}
 
+	fmt.Printf("[!] Webhook called. Updated ticket: %+v\n", res)
+
 	return c.JSON(http.StatusOK, handler.SuccessResponse{Data: res})
 }
