@@ -34,9 +34,9 @@ export default function Page() {
       setIsLoading(true);
 
       await axios.post(
-        `http://api.ticket-service.localhost/seat/reserve`,
+        `http://api.client-service.localhost/v1/ticket`,
         {
-          id: selectedSeatId,
+          seat_id: selectedSeatId,
         },
         {
           headers: {
