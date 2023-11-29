@@ -1,0 +1,385 @@
+{
+	"info": {
+		"_postman_id": "663b4ca3-5f63-4229-887f-285c600264f5",
+		"name": "Ticket Service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "16217278",
+		"_collection_link": "https://gold-firefly-495188.postman.co/workspace/Komputasi-Layanan~833c97e2-a6dd-4e2b-9692-3807a839d772/collection/16217278-663b4ca3-5f63-4229-887f-285c600264f5?action=share&source=collection_link&creator=16217278"
+	},
+	"item": [
+		{
+			"name": "Admin or User",
+			"item": [
+				{
+					"name": "Get All Events",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API}}/event",
+							"host": [
+								"{{API}}"
+							],
+							"path": [
+								"event"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Seat",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API}}/seat?eventId=<EVENT_ID>",
+							"host": [
+								"{{API}}"
+							],
+							"path": [
+								"seat"
+							],
+							"query": [
+								{
+									"key": "eventId",
+									"value": "<EVENT_ID>"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Admin",
+			"item": [
+				{
+					"name": "Create Event",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"<EVENT_NAME>\",\n    \"lineup\": [\n        \"<EVENT_LINE_UP_1>\", \n        \"<EVENT_LINE_UP_2>\", \n        \"<EVENT_LINE_UP_3>\"\n    ],\n    \"startTime\": \"<EVENT_START_TIME>\",\n    \"endTime\": \"<EVENT_END_TIME>\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API}}/event",
+							"host": [
+								"{{API}}"
+							],
+							"path": [
+								"event"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Seat",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"eventId\": \"<EVENT_ID>\",\n    \"name\": \"<SEAT_NAME>\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API}}/seat",
+							"host": [
+								"{{API}}"
+							],
+							"path": [
+								"seat"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Event",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"<EVENT_NAME>\",\n    \"lineup\": [\n        \"<EVENT_LINE_UP_1>\", \n        \"<EVENT_LINE_UP_2>\", \n        \"<EVENT_LINE_UP_3>\"\n    ],\n    \"startTime\": \"<EVENT_START_TIME>\",\n    \"endTime\": \"<EVENT_END_TIME>\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API}}/event/<EVENT_ID>",
+							"host": [
+								"{{API}}"
+							],
+							"path": [
+								"event",
+								"<EVENT_ID>"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Seat",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"eventId\": \"<EVENT_ID>\",\n    \"name\": \"<SEAT_NAME>\",\n    \"status\": \"<SEAT_STATUS>\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API}}/seat/<SEAT_ID>",
+							"host": [
+								"{{API}}"
+							],
+							"path": [
+								"seat",
+								"<SEAT_ID>"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Event",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{API}}/event/<EVENT_ID>",
+							"host": [
+								"{{API}}"
+							],
+							"path": [
+								"event",
+								"<EVENT_ID>"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Seat",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{API}}/seat/<SEAT_ID>",
+							"host": [
+								"{{API}}"
+							],
+							"path": [
+								"seat",
+								"<SEAT_ID>"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "Reserve",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": \"<SEAT_ID>\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API}}/seat/reserve",
+							"host": [
+								"{{API}}"
+							],
+							"path": [
+								"seat",
+								"reserve"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cancel",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": \"<SEAT_ID>\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API}}/seat/cancel",
+							"host": [
+								"{{API}}"
+							],
+							"path": [
+								"seat",
+								"cancel"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Webhook",
+			"item": [
+				{
+					"name": "Webhook Success",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": \"<SEAT_ID>\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API}}/seat/webhook-success",
+							"host": [
+								"{{API}}"
+							],
+							"path": [
+								"seat",
+								"webhook-success"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Webhook Failed",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": \"<SEAT_ID>\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API}}/seat/webhook-failed",
+							"host": [
+								"{{API}}"
+							],
+							"path": [
+								"seat",
+								"webhook-failed"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Webhook Refund",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": \"<SEAT_ID>\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API}}/seat/webhook-refund",
+							"host": [
+								"{{API}}"
+							],
+							"path": [
+								"seat",
+								"webhook-refund"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "<BEARER_TOKEN>",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "API",
+			"value": "http://api.ticket-service.localhost",
+			"type": "string"
+		}
+	]
+}

@@ -5,7 +5,8 @@
     "dev": "bun run --watch src/index.ts",
     "postinstall": "bunx prisma generate",
     "migrate-dev": "cross-env DATABASE_URL=\"postgresql://ticket-user:ticket-password@localhost:5433/ticket\" bunx prisma migrate dev",
-    "migrate-deploy": "cross-env DATABASE_URL=\"postgresql://ticket-user:ticket-password@localhost:5433/ticket\" bunx prisma migrate deploy"
+    "migrate-deploy": "cross-env DATABASE_URL=\"postgresql://ticket-user:ticket-password@localhost:5433/ticket\" bunx prisma migrate deploy",
+    "seed": "cross-env DATABASE_URL=\"postgresql://ticket-user:ticket-password@localhost:5433/ticket\" bunx prisma db seed"
   },
   "dependencies": {
     "@elysiajs/bearer": "^0.7.0",
@@ -25,7 +26,8 @@
     "prisma": "^5.6.0"
   },
   "prisma": {
-    "schema": "prisma/schema.prisma"
+    "schema": "./prisma/schema.prisma",
+    "seed": "bun ./prisma/seed.ts"
   },
   "module": "src/index.ts"
 }
