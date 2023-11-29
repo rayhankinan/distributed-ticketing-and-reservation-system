@@ -35,9 +35,7 @@ From the root of this repository, run `docker-compose up`.
 
 To run the migration, make sure `bun` is installed. Then, simply do `bun install` and `bun prisma migrate dev`.
 
-To run the migration, you will need this `.env`. _Make sure the container for ticket database is up first!_
+ _Make sure the container for ticket database is up first!_
 
-To run the seeding, make sure that the ticket-database container is already running, then do do `bun seed`
-```
-DATABASE_URL=postgresql://ticket-user:ticket-password@localhost:5433/ticket
-```
+To run the seeding, make sure that the ticket-database container is already running, then simply do `bun seed`
+
