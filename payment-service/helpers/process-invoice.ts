@@ -14,7 +14,7 @@ export const tryToProcessInvoice = async (invoiceId: string) => {
     console.log(`>> Failed processing invoice ID ${invoiceId}: ${error}`);
 
     // Put back to queue
-    await publishMessage("payment", invoiceId);
+    // await publishMessage("payment", invoiceId);
   }
 };
 

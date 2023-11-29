@@ -14,7 +14,7 @@ export const tryToProcessRefund = async (invoiceId: string) => {
     console.log(`>> Failed processing refund ID ${invoiceId}: ${error}`);
 
     // Put back to queue
-    await publishMessage("refund", invoiceId);
+    // await publishMessage("refund", invoiceId);
   }
 };
 
