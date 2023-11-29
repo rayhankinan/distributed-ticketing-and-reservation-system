@@ -800,11 +800,15 @@ const app = new Elysia()
                   role: Role.USER,
                 });
 
-                await axiosTicketInstance.post("/seat/reserve", body, {
-                  headers: {
-                    Authorization: `Bearer ${bearer}`,
-                  },
-                });
+                try {
+                  await axiosTicketInstance.post("/seat/reserve", body, {
+                    headers: {
+                      Authorization: `Bearer ${bearer}`,
+                    },
+                  });
+                } catch (error) {
+                  await redis.rPush(`queue:${data.id}`);
+                }
 
                 set.status = status;
 
@@ -942,11 +946,15 @@ const app = new Elysia()
                   role: Role.USER,
                 });
 
-                await axiosTicketInstance.post("/seat/reserve", body, {
-                  headers: {
-                    Authorization: `Bearer ${bearer}`,
-                  },
-                });
+                try {
+                  await axiosTicketInstance.post("/seat/reserve", body, {
+                    headers: {
+                      Authorization: `Bearer ${bearer}`,
+                    },
+                  });
+                } catch (error) {
+                  await redis.rPush(`queue:${data.id}`);
+                }
 
                 set.status = status;
 
