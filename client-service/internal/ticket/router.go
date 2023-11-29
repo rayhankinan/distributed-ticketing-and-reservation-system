@@ -2,7 +2,6 @@ package ticket
 
 import "client-service/internal/server"
 
-// TODO: Tambahkan request untuk refund ticket
 func RegisterRoute(s server.Server, h Handle) {
 	v1 := s.Echo().Group("/v1")
 	v1.POST("/ticket", h.CreateTicketHandler)

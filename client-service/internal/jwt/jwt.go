@@ -37,7 +37,6 @@ func GetUserIDFromJWT(tokenString string) (string, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return jwtKey, nil
 	})
-
 	if err != nil {
 		return "", err
 	}
@@ -53,4 +52,25 @@ func GetUserIDFromJWT(tokenString string) (string, error) {
 	}
 
 	return userID, nil
+}
+
+func GetRoleFromJWT(tokenString string) (string, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return jwtKey, nil
+	})
+	if err != nil {
+		return "", err
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok || !token.Valid {
+		return "", errors.New("invalid token")
+	}
+
+	role, ok := claims["role"].(string)
+	if !ok {
+		return "", errors.New("invalid role")
+	}
+
+	return role, nil
 }
