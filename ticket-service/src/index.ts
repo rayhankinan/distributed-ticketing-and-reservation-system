@@ -338,19 +338,8 @@ const app = new Elysia()
                 db,
                 redis,
                 axiosPaymentInstance,
+                axiosClientInstance,
               }) => {
-                const isFailed = Math.random() < 0; // TODO: Replace with 0.2 if system is stable
-
-                if (isFailed) {
-                  set.status = StatusCodes.INTERNAL_SERVER_ERROR;
-
-                  return {
-                    data: null,
-                    metadata: null,
-                    message: ReasonPhrases.INTERNAL_SERVER_ERROR,
-                  };
-                }
-
                 if (!payload) {
                   set.status = StatusCodes.FORBIDDEN;
 
@@ -358,6 +347,50 @@ const app = new Elysia()
                     data: null,
                     metadata: null,
                     message: ReasonPhrases.FORBIDDEN,
+                  };
+                }
+
+                const isFailed = Math.random() < 0.2;
+
+                if (isFailed) {
+                  console.log(
+                    "[!] Intentional fail for /reserve! Creating failed PDF."
+                  );
+
+                  // Failed reserving. Send failed PDF to client.
+                  set.status = StatusCodes.INTERNAL_SERVER_ERROR;
+
+                  const pdfData = Buffer.from(
+                    JSON.stringify({
+                      userId: payload.userId,
+                      seatId: body.id,
+                      status: TicketStatus.FAILED,
+                      failedReason: "Failed to call payment service",
+                    })
+                  ).toString("base64url");
+
+                  const pdfHash = createHmac("sha256", "dhika-jelek")
+                    .update(pdfData)
+                    .digest("base64url");
+
+                  const rawURL = new URL("http://cdn.ticket-pdf.localhost");
+
+                  rawURL.searchParams.append("data", pdfData);
+                  rawURL.searchParams.append("hash", pdfHash);
+
+                  const url = rawURL.toString();
+
+                  // Call ticket service to notify user that the ticket is ready
+                  await axiosClientInstance.patch("/v1/ticket/webhook", {
+                    seat_id: body.id,
+                    status: TicketStatus.FAILED,
+                    link: url,
+                  });
+
+                  return {
+                    data: null,
+                    metadata: null,
+                    message: ReasonPhrases.INTERNAL_SERVER_ERROR,
                   };
                 }
 
