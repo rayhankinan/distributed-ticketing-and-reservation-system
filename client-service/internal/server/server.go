@@ -29,6 +29,7 @@ func New(l *logrus.Logger) Server {
 
 	e.Use(middleware.CORS())
 	e.Use(middleware.Recover())
+	e.Use(middleware.Logger())
 
 	return &server{
 		logger: l,

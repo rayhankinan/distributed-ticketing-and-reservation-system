@@ -48,7 +48,10 @@ export default function Page() {
       setSelectedSeatId("");
       setSelectedEventId("");
 
-      toast.success("Berhasil melakukan booking seat!", { duration: 2000 });
+      toast.success(
+        "Permintaan booking seat berhasil dikirim! Silakan cek halaman booking secara berkala.",
+        { duration: 2000 }
+      );
     } catch (error) {
       toast.error("Gagal melakukan booking seat.", { duration: 2000 });
     } finally {

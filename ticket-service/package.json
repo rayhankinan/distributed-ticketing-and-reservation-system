@@ -12,6 +12,7 @@
     "@elysiajs/cors": "^0.7.2",
     "@elysiajs/jwt": "^0.7.0",
     "@elysiajs/server-timing": "^0.7.1",
+    "@grotto/logysia": "^0.0.5",
     "@prisma/client": "^5.6.0",
     "axios": "^1.6.2",
     "elysia": "latest",

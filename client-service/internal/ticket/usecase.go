@@ -58,3 +58,11 @@ func (u *Usecase) UpdateByUserID(ctx context.Context, userID uuid.UUID, ticket T
 	}
 	return updatedTicket, nil
 }
+
+func (u *Usecase) UpdateById(ctx context.Context, ticket Ticket) (Ticket, error) {
+	updatedTicket, err := u.repo.UpdateById(ctx, ticket)
+	if err != nil {
+		return Ticket{}, err
+	}
+	return updatedTicket, nil
+}
