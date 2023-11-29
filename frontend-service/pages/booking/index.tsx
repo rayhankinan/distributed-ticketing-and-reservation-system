@@ -1,4 +1,6 @@
+import { TicketStatus } from "@/enum";
 import { useAuth } from "@/hooks/use-auth";
+import { useTickets } from "@/hooks/use-tickets";
 import {
   Button,
   Card,
@@ -17,6 +19,7 @@ import Link from "next/link";
 
 export default function Page() {
   const { logOut } = useAuth();
+  const { tickets } = useTickets();
 
   return (
     <div className="max-w-[1160px] mx-auto p-[1rem] min-h-screen flex items-center">
@@ -36,30 +39,38 @@ export default function Page() {
               <TableColumn>Tiket</TableColumn>
             </TableHeader>
             <TableBody>
-              <TableRow key="1">
-                <TableCell>1</TableCell>
-                <TableCell>Berhasil</TableCell>
-                <TableCell>
-                  <Link href="https://www.google.com" className="text-primary">
-                    Unduh
-                  </Link>
-                </TableCell>
-              </TableRow>
-              <TableRow key="2">
-                <TableCell>2</TableCell>
-                <TableCell>Gagal</TableCell>
-                <TableCell>-</TableCell>
-              </TableRow>
-              <TableRow key="3">
-                <TableCell>3</TableCell>
-                <TableCell>Pending</TableCell>
-                <TableCell>-</TableCell>
-              </TableRow>
-              <TableRow key="4">
-                <TableCell>4</TableCell>
-                <TableCell>Pending</TableCell>
-                <TableCell>-</TableCell>
-              </TableRow>
+              {tickets.map((ticket) => {
+                return (
+                  <TableRow key={ticket.ID}>
+                    <TableCell>{ticket.ID}</TableCell>
+                    <TableCell>{ticket.Status}</TableCell>
+                    <TableCell>
+                      {ticket.Status === TicketStatus.SUCCESS && (
+                        <Link
+                          href={ticket.Link}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-primary"
+                        >
+                          Cetak tiket
+                        </Link>
+                      )}
+                      {ticket.Status === TicketStatus.FAILED && (
+                        <Link
+                          href={ticket.Link}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-primary"
+                        >
+                          Periksa tiket
+                        </Link>
+                      )}
+                      {ticket.Status === TicketStatus.REFUNDED &&
+                        "Tiket sudah dibatalkan"}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </CardBody>
