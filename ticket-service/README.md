@@ -33,7 +33,7 @@ The body and header for all APIs can be seen in the Postman collection inside `t
 
 From the root of this repository, run `docker-compose up`.
 
-To run the migration, make sure `bun` is installed. Then, simply do `bun install` and `bun prisma migrate dev`.
+To run the migration, make sure `bun` is installed. Then, simply do `bun install` and `bun prisma migrate-dev`.
 
  _Make sure the container for ticket database is up first!_
 
