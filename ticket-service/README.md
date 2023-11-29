@@ -1,15 +1,39 @@
-# Elysia with Bun runtime
+# Payment App
 
-## Getting Started
-To get started with this template, simply paste this command into your terminal:
-```bash
-bun create elysia ./elysia-example
+## API Docs
+
+### HTTP APIs
+
+#### Event/seat related
+
+| HTTP Method | Endpoint | Description |
+| ----------- | -------- | ----------- |
+| GET | /event | Get all events |
+| GET | /seat?eventId=<eventId> | Get seats |
+| POST | /event | Create event |
+| POST | /seat | Create seat |
+| PUT | /event/:id | Update event |
+| PUT | /seat/:id | Update seat |
+| DELETE | /event/:id | Delete event |
+| DELETE | /seat/:id | Delete seat |
+
+
+#### Booking related
+| HTTP Method | Endpoint | Description |
+| ----------- | -------- | ----------- |
+| POST | /seat/reserve | Reserve seat |
+| POST | /seat/cancel | Cancel reservation |
+| POST | /seat/webhook-success | Webhook for successful payment |
+| POST | /seat/webhook-refund | Webhook for failed payment |
+| POST | /seat/webhook-failed | Webhook for refunds |
+
+## How To Start
+
+From the root of this repository, run `docker-compose up`.
+
+To run the migration, make sure `bun` is installed. Then, simply do `bun install` and `bun prisma migrate dev`.
+
+To run the migration, you will need this `.env`. _Make sure the container for ticket database is up first!_
 ```
-
-## Development
-To start the development server run:
-```bash
-bun run dev
+DATABASE_URL=postgresql://ticket-user:ticket-password@localhost:5433/ticket
 ```
-
-Open http://localhost:3000/ with your browser to see the result.
