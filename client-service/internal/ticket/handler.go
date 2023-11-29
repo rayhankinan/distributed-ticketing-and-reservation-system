@@ -118,6 +118,11 @@ func (h *Handle) CreateTicketHandler(c echo.Context) error {
 	}
 	defer reserveResp.Body.Close()
 
+	if reserveResp.StatusCode != http.StatusCreated {
+		h.logger.Error(err)
+		return c.JSON(http.StatusInternalServerError, handler.ErrorResponse{Message: "Failed to reserve seat"})
+	}
+
 	return c.JSON(http.StatusCreated, handler.SuccessResponse{Data: res})
 }
 
@@ -280,14 +285,17 @@ func (h *Handle) RefundTicketHandler(c echo.Context) error {
 	reserveReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
 	client := &http.Client{}
-	reserveResp, err := client.Do(reserveReq) // NOTE: An error is returned if caused by client policy (such as CheckRedirect), or failure to speak HTTP (such as a network connectivity problem). A non-2xx status code doesn't cause an error.
+	reserveResp, err := client.Do(reserveReq)
 	if err != nil {
 		h.logger.Error(err)
 		return c.JSON(http.StatusInternalServerError, handler.ErrorResponse{Message: "Failed to send reserve request"})
 	}
 	defer reserveResp.Body.Close()
 
-	// TODO: Handle if the status code is not 200
+	if reserveResp.StatusCode != http.StatusCreated {
+		h.logger.Error(err)
+		return c.JSON(http.StatusInternalServerError, handler.ErrorResponse{Message: "Failed to cancel seat"})
+	}
 
 	return c.JSON(http.StatusCreated, handler.SuccessResponse{Data: res})
 }
