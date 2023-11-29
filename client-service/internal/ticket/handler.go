@@ -250,6 +250,15 @@ func (h *Handle) RefundTicketHandler(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, handler.ErrorResponse{Message: "Unauthorized"})
 	}
 
+	// Change ticket status to ON_GOING to notify user that it's currently on going
+	ticket.Status = OnGoing
+
+	res, err := h.ticketUsecase.UpdateByUserID(ctx, UID, ticket)
+	if err != nil {
+		h.logger.Error(err)
+		return c.JSON(http.StatusInternalServerError, handler.ErrorResponse{Message: err.Error()})
+	}
+
 	jsonBody, _ := json.Marshal(
 		map[string]uuid.UUID{
 			"id": ticket.SeatID,
@@ -282,7 +291,7 @@ func (h *Handle) RefundTicketHandler(c echo.Context) error {
 
 	// TODO: Handle if the status code is not 200
 
-	return c.JSON(http.StatusCreated, handler.SuccessResponse{Data: ticket})
+	return c.JSON(http.StatusCreated, handler.SuccessResponse{Data: res})
 }
 
 func (h *Handle) UpdateTicketByUserIDHandler(c echo.Context) error {
