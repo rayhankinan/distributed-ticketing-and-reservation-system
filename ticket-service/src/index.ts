@@ -806,7 +806,7 @@ const app = new Elysia()
                       Authorization: `Bearer ${bearer}`,
                     },
                   });
-                } catch (error) {
+                } catch {
                   await redis.rPush(`queue:${data.id}`);
                 }
 
@@ -952,7 +952,7 @@ const app = new Elysia()
                       Authorization: `Bearer ${bearer}`,
                     },
                   });
-                } catch (error) {
+                } catch {
                   await redis.rPush(`queue:${data.id}`);
                 }
 
