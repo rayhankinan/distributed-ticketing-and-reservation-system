@@ -809,7 +809,7 @@ const app = new Elysia()
                     },
                   });
                 } catch {
-                  await redis.rPush(`queue:${data.id}`, payload.userId);
+                  await redis.rPush(`queue:${data.id}`, userId);
                 }
 
                 set.status = status;
@@ -955,7 +955,7 @@ const app = new Elysia()
                     },
                   });
                 } catch {
-                  await redis.rPush(`queue:${data.id}`, payload.userId);
+                  await redis.rPush(`queue:${data.id}`, userId);
                 }
 
                 set.status = status;
