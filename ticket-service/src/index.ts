@@ -786,20 +786,9 @@ const app = new Elysia()
 
                 // Call ticket service for new reservation from queue
                 let isDoneProcessingQueue = false;
+                let userId = await redis.rPop(`queue:${data.id}`);
 
-                while (!isDoneProcessingQueue) {
-                  const userId = await redis.rPop(`queue:${data.id}`);
-
-                  if (!userId) {
-                    set.status = status;
-
-                    return {
-                      data,
-                      metadata: null,
-                      message,
-                    };
-                  }
-
+                while (!isDoneProcessingQueue && userId !== null) {
                   const bearer = await jwt.sign({
                     userId,
                     role: Role.USER,
@@ -812,12 +801,13 @@ const app = new Elysia()
                       },
                     });
 
+                    // Stop processing queue if success
                     isDoneProcessingQueue = true;
                   } catch {
                     // Call client service to notify user that the ticket has failed to be booked
                     const pdfData = Buffer.from(
                       JSON.stringify({
-                        userId: userId,
+                        userId,
                         seatId: data.id,
                         status: TicketStatus.FAILED,
                       })
@@ -840,7 +830,20 @@ const app = new Elysia()
                       status: TicketStatus.FAILED,
                       link: url,
                     });
+
+                    // Get next user from queue
+                    userId = await redis.rPop(`queue:${data.id}`);
                   }
+                }
+
+                if (!userId) {
+                  set.status = status;
+
+                  return {
+                    data,
+                    metadata: null,
+                    message,
+                  };
                 }
 
                 set.status = status;
@@ -963,20 +966,9 @@ const app = new Elysia()
 
                 // Call ticket service for new reservation from queue
                 let isDoneProcessingQueue = false;
+                let userId = await redis.rPop(`queue:${data.id}`);
 
-                while (!isDoneProcessingQueue) {
-                  const userId = await redis.rPop(`queue:${data.id}`);
-
-                  if (!userId) {
-                    set.status = status;
-
-                    return {
-                      data,
-                      metadata: null,
-                      message,
-                    };
-                  }
-
+                while (!isDoneProcessingQueue && userId !== null) {
                   const bearer = await jwt.sign({
                     userId,
                     role: Role.USER,
@@ -989,12 +981,13 @@ const app = new Elysia()
                       },
                     });
 
+                    // Stop processing queue if success
                     isDoneProcessingQueue = true;
                   } catch {
                     // Call client service to notify user that the ticket has failed to be booked
                     const pdfData = Buffer.from(
                       JSON.stringify({
-                        userId: userId,
+                        userId,
                         seatId: data.id,
                         status: TicketStatus.FAILED,
                       })
@@ -1017,7 +1010,20 @@ const app = new Elysia()
                       status: TicketStatus.FAILED,
                       link: url,
                     });
+
+                    // Get next user from queue
+                    userId = await redis.rPop(`queue:${data.id}`);
                   }
+                }
+
+                if (!userId) {
+                  set.status = status;
+
+                  return {
+                    data,
+                    metadata: null,
+                    message,
+                  };
                 }
 
                 set.status = status;
