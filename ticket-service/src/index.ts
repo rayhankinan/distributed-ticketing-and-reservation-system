@@ -359,9 +359,6 @@ const app = new Elysia()
                     "[!] Intentional fail for /reserve! Creating failed PDF."
                   );
 
-                  // Failed reserving. Send failed PDF to client.
-                  set.status = StatusCodes.INTERNAL_SERVER_ERROR;
-
                   const pdfData = Buffer.from(
                     JSON.stringify({
                       userId: payload.userId,
@@ -388,6 +385,9 @@ const app = new Elysia()
                     status: TicketStatus.FAILED,
                     link: url,
                   });
+
+                  // Failed reserving. Send failed PDF to client.
+                  set.status = StatusCodes.INTERNAL_SERVER_ERROR;
 
                   return {
                     data: null,
@@ -809,7 +809,7 @@ const app = new Elysia()
                     },
                   });
                 } catch {
-                  await redis.rPush(`queue:${data.id}`);
+                  await redis.rPush(`queue:${data.id}`, userId);
                 }
 
                 set.status = status;
@@ -955,7 +955,7 @@ const app = new Elysia()
                     },
                   });
                 } catch {
-                  await redis.rPush(`queue:${data.id}`);
+                  await redis.rPush(`queue:${data.id}`, userId);
                 }
 
                 set.status = status;
