@@ -784,7 +784,7 @@ const app = new Elysia()
                   link: url,
                 });
 
-                // Call ticket service for new reservation from queue
+                // Call ticket service for new reservation from queue (TODO: Pindahkan ke CRON JOB)
                 const userId = await redis.rPop(`queue:${data.id}`);
 
                 if (!userId) {
@@ -809,7 +809,39 @@ const app = new Elysia()
                     },
                   });
                 } catch {
-                  await redis.rPush(`queue:${data.id}`, userId);
+                  // KINAN'S CHANGES
+
+                  // Commented out
+                  // await redis.rPush(`queue:${data.id}`, userId);
+
+                  // Call client service to notify user that the ticket has failed to be booked
+                  const pdfData = Buffer.from(
+                    JSON.stringify({
+                      userId: userId,
+                      seatId: data.id,
+                      status: TicketStatus.FAILED,
+                    })
+                  ).toString("base64url");
+
+                  const pdfHash = createHmac("sha256", "dhika-jelek")
+                    .update(pdfData)
+                    .digest("base64url");
+
+                  const rawURL = new URL("http://cdn.ticket-pdf.localhost");
+
+                  rawURL.searchParams.append("data", pdfData);
+                  rawURL.searchParams.append("hash", pdfHash);
+
+                  const url = rawURL.toString();
+
+                  // Tell client that the ticket has failed to be booked
+                  await axiosClientInstance.patch("/v1/ticket/webhook", {
+                    seat_id: data.id,
+                    status: TicketStatus.FAILED,
+                    link: url,
+                  });
+
+                  // Continue to dequeue until one of the reservation is successful
                 }
 
                 set.status = status;
@@ -930,7 +962,7 @@ const app = new Elysia()
                   link: url,
                 });
 
-                // Call ticket service for new reservation from queue
+                // Call ticket service for new reservation from queue (TODO: Pindahkan ke CRON JOB)
                 const userId = await redis.rPop(`queue:${data.id}`);
 
                 if (!userId) {
@@ -955,7 +987,39 @@ const app = new Elysia()
                     },
                   });
                 } catch {
-                  await redis.rPush(`queue:${data.id}`, userId);
+                  // KINAN'S CHANGES
+
+                  // Commented out
+                  // await redis.rPush(`queue:${data.id}`, userId);
+
+                  // Call client service to notify user that the ticket has failed to be booked
+                  const pdfData = Buffer.from(
+                    JSON.stringify({
+                      userId: userId,
+                      seatId: data.id,
+                      status: TicketStatus.FAILED,
+                    })
+                  ).toString("base64url");
+
+                  const pdfHash = createHmac("sha256", "dhika-jelek")
+                    .update(pdfData)
+                    .digest("base64url");
+
+                  const rawURL = new URL("http://cdn.ticket-pdf.localhost");
+
+                  rawURL.searchParams.append("data", pdfData);
+                  rawURL.searchParams.append("hash", pdfHash);
+
+                  const url = rawURL.toString();
+
+                  // Tell client that the ticket has failed to be booked
+                  await axiosClientInstance.patch("/v1/ticket/webhook", {
+                    seat_id: data.id,
+                    status: TicketStatus.FAILED,
+                    link: url,
+                  });
+
+                  // Continue to dequeue until one of the reservation is successful
                 }
 
                 set.status = status;
