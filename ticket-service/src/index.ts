@@ -8,6 +8,7 @@ import { PrismaClient, SeatStatus } from "@prisma/client";
 import { createClient } from "redis";
 import axios from "axios";
 import { createHmac } from "crypto";
+import { logger } from "@grotto/logysia";
 
 import { Role, TicketStatus } from "./enum";
 
@@ -33,6 +34,7 @@ const app = new Elysia()
       alg: "HS256",
     })
   )
+  .use(logger())
   .use(bearer())
   .use(serverTiming())
   .use(
