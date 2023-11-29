@@ -35,7 +35,7 @@ func (r *repository) Create(ctx context.Context, ticket Ticket) (Ticket, error) 
 func (r *repository) GetByUserId(ctx context.Context, uid uuid.UUID) ([]Ticket, error) {
 	var tickets []Ticket
 
-	if err := r.db.WithContext(ctx).Where("uid = ?", uid).Find(&tickets).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("uid = ?", uid).Order(`created_at desc`).Find(&tickets).Error; err != nil {
 		return tickets, err
 	}
 
@@ -73,7 +73,7 @@ func (r *repository) Delete(ctx context.Context, id uuid.UUID) (Ticket, error) {
 func (r *repository) UpdateByUserID(ctx context.Context, userID uuid.UUID, updatedTicket Ticket) (Ticket, error) {
 	var ticket Ticket
 
-	if err := r.db.WithContext(ctx).Where("uid = ? AND seat_id = ?", userID, updatedTicket.SeatID).First(&ticket).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("uid = ? AND seat_id = ?", userID, updatedTicket.SeatID).Order(`created_at desc`).Take(&ticket).Error; err != nil {
 		return Ticket{}, err
 	}
 
