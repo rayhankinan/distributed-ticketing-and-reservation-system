@@ -15,10 +15,12 @@ import {
   TableHeader,
   TableRow,
 } from "@nextui-org/react";
+import axios from "axios";
 import Link from "next/link";
+import { toast } from "sonner";
 
 export default function Page() {
-  const { logOut } = useAuth();
+  const { logOut, token } = useAuth();
   const { tickets } = useTickets();
 
   return (
@@ -46,16 +48,45 @@ export default function Page() {
                     <TableCell>{ticket.Status}</TableCell>
                     <TableCell>
                       {ticket.Status === TicketStatus.SUCCESS && (
-                        <Link
-                          href={ticket.Link}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-primary"
-                        >
-                          Cetak tiket
-                        </Link>
+                        <div className="flex gap-[3rem] items-center">
+                          <Link
+                            href={ticket.Link}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-primary"
+                          >
+                            Cetak tiket
+                          </Link>
+                          <Button
+                            onClick={async () => {
+                              try {
+                                await axios.post(
+                                  `http://api.client-service.localhost/v1/ticket/${ticket.ID}/refund`,
+                                  {},
+                                  {
+                                    headers: {
+                                      Authorization: `Bearer ${token}`,
+                                    },
+                                  }
+                                );
+
+                                toast.success("Tiket berhasil direfund!", {
+                                  duration: 2000,
+                                });
+                              } catch (error) {
+                                console.log(error);
+                                toast.error("Tiket gagal direfund.", {
+                                  duration: 2000,
+                                });
+                              }
+                            }}
+                          >
+                            Refund tiket
+                          </Button>
+                        </div>
                       )}
-                      {ticket.Status === TicketStatus.FAILED && (
+                      {(ticket.Status === TicketStatus.FAILED ||
+                        ticket.Status === TicketStatus.REFUNDED) && (
                         <Link
                           href={ticket.Link}
                           target="_blank"
@@ -65,8 +96,6 @@ export default function Page() {
                           Periksa tiket
                         </Link>
                       )}
-                      {ticket.Status === TicketStatus.REFUNDED &&
-                        "Tiket sudah dibatalkan"}
                     </TableCell>
                   </TableRow>
                 );
