@@ -53,7 +53,12 @@ const styles = StyleSheet.create({
 });
 
 // Create Document Component
-const Viewer = ({ userId, seatId, status }: z.infer<typeof pdfSchema>) => {
+const Viewer = ({
+  userId,
+  seatId,
+  status,
+  failedReason,
+}: z.infer<typeof pdfSchema>) => {
   const [qrUrl, setQrUrl] = useState<string>("");
 
   useEffect(() => {
@@ -78,6 +83,9 @@ const Viewer = ({ userId, seatId, status }: z.infer<typeof pdfSchema>) => {
               <Text style={styles.heading}>Your ticket cannot be used!</Text>
               <Text style={styles.miniText}>User ID: {userId}</Text>
               <Text style={styles.miniText}>Status: {status}</Text>
+              {failedReason && (
+                <Text style={styles.miniText}>Reason: {failedReason}</Text>
+              )}
             </View>
           </Page>
         </Document>
