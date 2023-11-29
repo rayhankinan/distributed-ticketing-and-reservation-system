@@ -9,7 +9,7 @@ import (
 
 type Repository interface {
 	Create(ctx context.Context, ticket Ticket) (Ticket, error)
-	GetByUserId(ctx context.Context, uid uuid.UUID) (Ticket, error)
+	GetByUserId(ctx context.Context, uid uuid.UUID) ([]Ticket, error)
 	Update(ctx context.Context, ticket Ticket) (Ticket, error)
 	Delete(ctx context.Context, id uuid.UUID) (Ticket, error)
 	UpdateByUserID(ctx context.Context, userID uuid.UUID, ticket Ticket) (Ticket, error)
@@ -31,14 +31,14 @@ func (r *repository) Create(ctx context.Context, ticket Ticket) (Ticket, error) 
 	return ticket, nil
 }
 
-func (r *repository) GetByUserId(ctx context.Context, uid uuid.UUID) (Ticket, error) {
-	var ticket Ticket
+func (r *repository) GetByUserId(ctx context.Context, uid uuid.UUID) ([]Ticket, error) {
+	var tickets []Ticket
 
-	if err := r.db.WithContext(ctx).First(&ticket, "uid = ?", uid).Error; err != nil {
-		return Ticket{}, err
+	if err := r.db.WithContext(ctx).Where("uid = ?", uid).Find(&tickets).Error; err != nil {
+		return tickets, err
 	}
 
-	return ticket, nil
+	return tickets, nil
 }
 
 func (r *repository) Update(ctx context.Context, ticket Ticket) (Ticket, error) {

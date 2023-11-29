@@ -22,12 +22,12 @@ func (u *Usecase) Create(ctx context.Context, ticket Ticket) (Ticket, error) {
 	return createdTicket, nil
 }
 
-func (u *Usecase) GetByUserId(ctx context.Context, id uuid.UUID) (Ticket, error) {
-	ticket, err := u.repo.GetByUserId(ctx, id)
+func (u *Usecase) GetByUserId(ctx context.Context, id uuid.UUID) ([]Ticket, error) {
+	tickets, err := u.repo.GetByUserId(ctx, id)
 	if err != nil {
-		return Ticket{}, err
+		return tickets, err
 	}
-	return ticket, nil
+	return tickets, nil
 }
 
 func (u *Usecase) Update(ctx context.Context, ticket Ticket) (Ticket, error) {
