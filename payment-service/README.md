@@ -4,10 +4,10 @@
 
 ### HTTP APIs
 
-| HTTP Method | Endpoint   | Description              |
-| ----------- | ---------- | ------------------------ |
-| POST        | /invoice   | Create payment request   |
-| POST        | /refund    | Create refund request    |
+| HTTP Method | Endpoint | Description            |
+| ----------- | -------- | ---------------------- |
+| POST        | /invoice | Create payment request |
+| POST        | /refund  | Create refund request  |
 
 The body and header for all APIs can be seen in the Postman collection inside `payment-service` folder.
 
