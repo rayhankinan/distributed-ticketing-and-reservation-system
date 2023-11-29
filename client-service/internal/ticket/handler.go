@@ -251,7 +251,7 @@ func (h *Handle) RefundTicketHandler(c echo.Context) error {
 	// Change ticket status to ON_GOING to notify user that it's currently on going
 	ticket.Status = OnGoing
 
-	res, err := h.ticketUsecase.UpdateByUserID(ctx, UID, ticket)
+	res, err := h.ticketUsecase.UpdateById(ctx, ticket)
 	if err != nil {
 		h.logger.Error(err)
 		return c.JSON(http.StatusInternalServerError, handler.ErrorResponse{Message: err.Error()})
