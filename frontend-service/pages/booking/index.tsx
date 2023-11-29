@@ -21,7 +21,7 @@ import { toast } from "sonner";
 
 export default function Page() {
   const { logOut, token } = useAuth();
-  const { tickets } = useTickets();
+  const { tickets, mutate } = useTickets();
 
   return (
     <div className="max-w-[1160px] mx-auto p-[1rem] min-h-screen flex items-center">
@@ -70,9 +70,15 @@ export default function Page() {
                                   }
                                 );
 
-                                toast.success("Tiket berhasil direfund!", {
-                                  duration: 2000,
-                                });
+                                toast.success(
+                                  "Permintaan refund berhasil dikirim! Mohon cek ulang page secara berkala.",
+                                  {
+                                    duration: 2000,
+                                  }
+                                );
+
+                                // Update tickets shown in the page
+                                mutate();
                               } catch (error) {
                                 console.log(error);
                                 toast.error("Tiket gagal direfund.", {

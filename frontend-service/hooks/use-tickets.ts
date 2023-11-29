@@ -30,7 +30,7 @@ export const useTickets = () => {
       })
       .then((res) => res.data);
 
-  const { data, error, isLoading } = useSWR(
+  const { data, error, isLoading, mutate } = useSWR(
     `http://api.client-service.localhost/v1/ticket`,
     fetcher
   );
@@ -39,5 +39,6 @@ export const useTickets = () => {
     tickets: data?.data ?? [],
     error,
     isLoading,
+    mutate,
   };
 };
