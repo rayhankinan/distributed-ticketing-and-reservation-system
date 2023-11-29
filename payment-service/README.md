@@ -9,13 +9,7 @@
 | POST        | /invoice   | Create payment request   |
 | POST        | /refund    | Create refund request    |
 
-Both API will expect a body of:
-```
-{
-  "id": "<any-valid-uuid>"
-}
-```
-where "id" is the seat ID to paid for.
+The body and header for all APIs can be seen in the Postman collection inside `payment-service` folder.
 
 ## How To Start
 

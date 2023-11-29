@@ -1,0 +1,78 @@
+{
+	"info": {
+		"_postman_id": "c73146d3-47a6-41a4-8105-acd7d3a164e0",
+		"name": "Payment Service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "24679883"
+	},
+	"item": [
+		{
+			"name": "Create payment request",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"id\": \"<any-valid-uuid>\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{base_url}}/invoice"
+			},
+			"response": []
+		},
+		{
+			"name": "Create refund request",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"id\": \"<any-valid-uuid>\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{base_url}}/refund"
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": {
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJhMTM0MmU5MS04MDVmLTRiNzEtOGNmMi0wYzc5MmQ2YWMwMmYiLCJyb2xlIjoiVVNFUiIsImV4cCI6MTcwMTMzMTc3Nn0.6Srw0O53lRZve6zDYE_1y1nCOPLmLJ1H0oDVg5Hg07c"
+		}
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "url"
+		}
+	]
+}

@@ -27,6 +27,8 @@
 | POST | /seat/webhook-refund | Webhook for failed payment |
 | POST | /seat/webhook-failed | Webhook for refunds |
 
+The body and header for all APIs can be seen in the Postman collection inside `ticket-service` folder.
+
 ## How To Start
 
 From the root of this repository, run `docker-compose up`.

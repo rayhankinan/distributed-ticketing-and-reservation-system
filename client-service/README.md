@@ -24,8 +24,7 @@
 | PATCH | /v1/ticket/webhook| Webhook for booking status |
 | DELETE | /v1/ticket/:id | Delete ticket |
 
-The body and header for all APIs can be seen in the Postman collection.
-
+The body and header for all APIs can be seen in the Postman collection inside `client-service` folder.
 ## How To Start
 
 From the root of this repository, run `docker-compose up`.
