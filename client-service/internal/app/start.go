@@ -10,6 +10,7 @@ import (
 
 	"client-service/internal/client"
 	"client-service/internal/handler"
+	"client-service/internal/middleware"
 	"client-service/internal/router"
 	"client-service/internal/server"
 	"client-service/internal/ticket"
@@ -33,6 +34,7 @@ func NewStartCmd(dep *Dep) *StartCmd {
 	h := handler.New()
 	router.Register(s, h)
 	quitChan := make(chan os.Signal, 1)
+	middleware := middleware.NewMiddleware(dep.Logger)
 
 	clientRepo := client.NewRepository(db)
 	clientUsecase := client.NewUsecase(clientRepo)
@@ -42,7 +44,7 @@ func NewStartCmd(dep *Dep) *StartCmd {
 	ticketRepo := ticket.NewRepository(db)
 	ticketUsecase := ticket.NewUsecase(ticketRepo)
 	ticketHandler := ticket.NewHandle(ticketUsecase, dep.Logger)
-	ticket.RegisterRoute(s, ticketHandler)
+	ticket.RegisterRoute(s, ticketHandler, middleware)
 
 	return &StartCmd{
 		Server:   s,

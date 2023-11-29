@@ -1,16 +1,18 @@
 package ticket
 
-import "client-service/internal/server"
+import (
+	"client-service/internal/middleware"
+	"client-service/internal/server"
+)
 
-func RegisterRoute(s server.Server, h Handle) {
+func RegisterRoute(s server.Server, h Handle, mw middleware.Middleware) {
 	v1 := s.Echo().Group("/v1")
-	v1.POST("/ticket", h.CreateTicketHandler)
-	v1.GET("/ticket", h.GetTicketHandler)
-	v1.PUT("/ticket/:id", h.UpdateTicketHandler)
-	v1.DELETE("/ticket/:id", h.DeleteTicketHandler)
-	v1.POST("/ticket/:id/refund", h.RefundTicketHandler)
-	v1.PATCH("/ticket/webhook", h.UpdateTicketByUserIDHandler)
-}
+	userGroup := v1.Group("", mw.RoleCheckMiddleware("USER"))
 
-// OPTIONAL: Tambahkan middleware untuk validasi admin pada route tertentu
-// OPTIONAL: Tambahkan middleware untuk validasi user pada route tertentu
+	userGroup.POST("/ticket", h.CreateTicketHandler)
+	userGroup.GET("/ticket", h.GetTicketHandler)
+	userGroup.PUT("/ticket/:id", h.UpdateTicketHandler)
+	userGroup.DELETE("/ticket/:id", h.DeleteTicketHandler)
+	userGroup.POST("/ticket/:id/refund", h.RefundTicketHandler)
+	userGroup.PATCH("/ticket/webhook", h.UpdateTicketByUserIDHandler)
+}
