@@ -807,7 +807,7 @@ const app = new Elysia()
                     // Call client service to notify user that the ticket has failed to be booked
                     const pdfData = Buffer.from(
                       JSON.stringify({
-                        userId: userId,
+                        userId,
                         seatId: data.id,
                         status: TicketStatus.FAILED,
                       })
@@ -987,7 +987,7 @@ const app = new Elysia()
                     // Call client service to notify user that the ticket has failed to be booked
                     const pdfData = Buffer.from(
                       JSON.stringify({
-                        userId: userId,
+                        userId,
                         seatId: data.id,
                         status: TicketStatus.FAILED,
                       })
